@@ -1,0 +1,223 @@
+{
+  "main": {
+    "id": "0cd4944929bdf378",
+    "type": "split",
+    "children": [
+      {
+        "id": "5d7f8f2a4cebf4f1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "10a63bae59d46910",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "03-research/Foundation/deepseek-mhc.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "deepseek-mhc"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "1189e0aa603f3558",
+    "type": "split",
+    "children": [
+      {
+        "id": "3afd2f7eebe5769f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "ce9608dc0b652bce",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "17f5ae715441dd19",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "f6a70df12df3886e",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "d17dd2d06b735e64",
+    "type": "split",
+    "children": [
+      {
+        "id": "42ec45626f56328d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "54120f4afbcd6499",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "03-research/Foundation/deepseek-mhc.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "deepseek-mhc 的反向链接列表"
+            }
+          },
+          {
+            "id": "248a53309f415af5",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "03-research/Foundation/deepseek-mhc.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "deepseek-mhc 的出链列表"
+            }
+          },
+          {
+            "id": "5f384a2a454847f6",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "fb432c45b613b86d",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "ed94912dd6ac6cb9",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "03-research/Foundation/deepseek-mhc.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "deepseek-mhc 的大纲"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false
+    }
+  },
+  "active": "10a63bae59d46910",
+  "lastOpenFiles": [
+    "03-research/Foundation/deepseek-v3.md",
+    "03-research/Foundation/deepseek-v4.md",
+    "04-research/deepseek-mhc.md",
+    "04-research",
+    "03-research/Foundation/deepseek-mhc.md",
+    "1",
+    "03-research/RAG/rag-agent.md",
+    "01-training/grpo.md",
+    "03-research/Agent",
+    "03-research/00-overview.md",
+    "03-research/Foundation",
+    "01-training/ppo.md",
+    "01-training/dpo.md",
+    "03-research/RAG",
+    "03-research",
+    "04-research/deepseek-v4.md",
+    "04-research/deepseek-v3.md",
+    "04-research/00-overview.md",
+    "04-application/00-overview.md",
+    "03-application/rag-agent.md",
+    "03-application/00-overview.md",
+    "03-application",
+    "02-deployment/modelscope.md",
+    "02-deployment/vllm.md",
+    "02-deployment/torchserve.md",
+    "02-deployment/sglang.md",
+    "02-deployment/inference.md",
+    "02-deployment/fastapi.md",
+    "02-deployment/00-overview.md",
+    "02-deployment",
+    "01-training/swift.md",
+    "04-application/rag-agent.md",
+    "03-deployment/fastapi.md",
+    "未命名.canvas"
+  ]
+}
