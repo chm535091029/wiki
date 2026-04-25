@@ -7,7 +7,7 @@
 | 目录 | 内容 |
 |------|------|
 | [[RAG/llm-wiki/llm-wiki]] | LLM Wiki 知识库架构 |
-| [[Agent]] | Agent智能代理（待补充） |
+| [[Agent/prompt-engineering/prompt-engineering-servey]] | Prompt Engineering 提示工程综述 |
 | [[Foundation/deepseek-v3]] | DeepSeek V3.2 技术解析 |
 | [[Foundation/deepseek-mhc]] | DeepSeek MHC 架构 |
 | [[Foundation/deepseek-v4]] | DeepSeek V4 (Engram) |
@@ -17,7 +17,7 @@
 | 领域 | 说明 | 状态 |
 |------|------|------|
 | **RAG** | 检索增强生成，知识库问答 | 已完成 |
-| **Agent** | 智能代理，工具调用与任务规划 | 待补充 |
+| **Agent** | 智能代理，工具调用与任务规划 | Prompt Engineering |
 | **Foundation** | 基座模型架构创新 | DeepSeek系列 |
 
 ## 技术演进
@@ -35,6 +35,6 @@
 
 | 版本 | 核心创新 |
 |------|----------|
-| [[Foundation/deepseek-v3\|V3.2]] | DSA动态稀疏、RL后训练扩展 |
-| [[Foundation/deepseek-mhc\|MHC]] | 双随机矩阵约束、自动拓扑 |
-| [[Foundation/deepseek-v4\|V4]] | 计算-记忆解耦、N-gram索引 |
+| [[Foundation/deepseek-v3|V3.2]] | DSA动态稀疏、RL后训练扩展 |
+| [[Foundation/deepseek-mhc|MHC]] | 双随机矩阵约束、自动拓扑 |
+| [[Foundation/deepseek-v4|V4]] | 计算-记忆解耦、N-gram索引 |
