@@ -6,7 +6,7 @@
 
 | 目录 | 内容 |
 |------|------|
-| [[RAG/rag-agent]] | RAG检索增强与应用 |
+| [[RAG/llm-wiki/llm-wiki]] | LLM Wiki 知识库架构 |
 | [[Agent]] | Agent智能代理（待补充） |
 | [[Foundation/deepseek-v3]] | DeepSeek V3.2 技术解析 |
 | [[Foundation/deepseek-mhc]] | DeepSeek MHC 架构 |
@@ -29,6 +29,7 @@
 | 向量检索 | 语义匹配与知识检索 |
 | 重排序 | 提升检索精度 |
 | 上下文组装 | 优化LLM输入 |
+| **LLM Wiki** | 知识编译型知识库，边学边积累（见 [[RAG/llm-wiki/llm-wiki]]） |
 
 ### 基座模型
 
