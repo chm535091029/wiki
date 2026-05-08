@@ -4,24 +4,14 @@
 
 ## 目录
 
-| 文件 | 内容 |
+| 文件/目录 | 内容 |
 |------|------|
-| [[sglang]] | SGLANG推理框架 |
-| [[vllm]] | vLLM部署方案 |
-| [[torchserve]] | TorchServe部署 |
-| [[modelscope]] | ModelScope部署 |
-| [[inference]] | ONNX推理优化 |
-
-## 部署框架对比
-
-| 框架 | 特点 | 适用场景 |
-|------|------|----------|
-| [[sglang\|SGLANG]] | 高性能批量推理 | 生产服务 |
-| [[vllm\|vLLM]] | 本地部署+工具调用 | 工具增强场景 |
-| [[torchserve\|TorchServe]] | 多线程批量推理 | 大规模推理 |
+| [[deployment-framework]] | 部署框架（SGLANG、vLLM、TorchServe等） |
+| [[inference]] | 推理方法和优化 |
 
 ## 核心议题
 
 1. **推理框架选型**：根据场景选择合适框架
-2. **性能优化**：ONNX加速、批量处理
-3. **高可用架构**：负载均衡、自动重启
+2. **性能优化**：ONNX加速、批量处理、缓存优化
+3. **成本优化**：Prompt Caching降低API调用成本
+4. **高可用架构**：负载均衡、自动重启

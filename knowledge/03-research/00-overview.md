@@ -7,6 +7,7 @@
 | 目录 | 内容 |
 |------|------|
 | [[RAG/llm-wiki/llm-wiki]] | LLM Wiki 知识库架构 |
+| [[RAG/llm-wiki/llm-wiki-combined-rag]] | 企业级 RAG 工程化方法论 |
 | [[Agent/prompt-engineering/prompt-engineering-servey]] | Prompt Engineering 提示工程综述 |
 | [[Foundation/deepseek-v3]] | DeepSeek V3.2 技术解析 |
 | [[Foundation/deepseek-mhc]] | DeepSeek MHC 架构 |
@@ -30,6 +31,7 @@
 | 重排序 | 提升检索精度 |
 | 上下文组装 | 优化LLM输入 |
 | **LLM Wiki** | 知识编译型知识库，边学边积累（见 [[RAG/llm-wiki/llm-wiki]]） |
+| **组合 RAG** | 企业级 RAG 工程化方法论，结构化优先（见 [[RAG/llm-wiki/llm-wiki-combined-rag]]） |
 
 ### 基座模型
 
