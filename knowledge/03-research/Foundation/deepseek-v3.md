@@ -1,3 +1,11 @@
+---
+aliases: [DeepSeek-V3.2, DeepSeek V3.2]
+tags: [DSA, 滑动窗口注意力, 块稀疏计算, FlashAttention, GRPO, MTP, LightningIndexer]
+related:
+  - "[[deepseek-mhc]]" # mHC基于HC的残差连接改进
+  - "[[deepseek-v4]]" # V4继承并升级V3架构
+---
+
 # DeepSeek V3.2
 
 > **论文链接**: [arXiv:2512.02556](https://arxiv.org/pdf/2512.02556)  

@@ -1,3 +1,11 @@
+---
+aliases: [mHC, 多样体约束超连接, Manifold-Constrained Hyper-Connections]
+tags: [mHC, 双随机矩阵, Sinkhorn-Knopp, Birkhoff多面体, KernelFusion, DualPipe]
+related:
+  - "[[deepseek-v4]]" # V4集成了mHC残差连接
+  - "[[deepseek-v3]]" # V3使用HC基础架构
+---
+
 # DeepSeek MHC: Manifold-Constrained Hyper-Connections
 
 **论文基本信息**
@@ -5,6 +13,7 @@
 - **作者**: Zhenda Xie, Yixuan Wei, Huanqi Cao et al. (DeepSeek-AI)
 - **arXiv ID**: 2512.24880
 - **发布日期**: 2025年12月
+- 论文讲解：https://zhuanlan.zhihu.com/p/1993806022893138635
 
 ---
 
