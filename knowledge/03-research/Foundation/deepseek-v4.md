@@ -1,6 +1,6 @@
 ---
 aliases: [DeepSeek-V4, DeepSeek V4]
-tags: [Muon优化器, CSA, HCA, SharedKV-MQA, TileLang, RMSNorm, RoPE, AttentionSink, OnPolicyDistillation]
+tags: [Muon优化器, CSA, HCA, SharedKV-MQA, TileLang, RMSNorm, RoPE, AttentionSink, OnPolicyDistillation, MOE, mHC]
 related:
   - "[[deepseek-mhc]]" # V4集成了mHC残差连接
   - "[[deepseek-v3]]" # V4继承V3架构（包含DSA）

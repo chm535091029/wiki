@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "e8be0e3a65fc9b6e",
+        "id": "ad8fc9e1d35ccd44",
         "type": "tabs",
         "children": [
           {
-            "id": "cd197caf19eb333e",
+            "id": "5258f8a0004d0623",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "03-research/Foundation/deepseek-mhc.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "新标签页"
+              "title": "deepseek-mhc"
             }
           }
         ]
@@ -70,8 +74,7 @@
               "title": "书签"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "horizontal",
@@ -180,9 +183,10 @@
       "bases:新建数据库": false
     }
   },
-  "active": "17f5ae715441dd19",
+  "active": "5258f8a0004d0623",
   "lastOpenFiles": [
     "03-research/Foundation/deepseek-v4.md",
+    "03-research/00-overview.md",
     "03-research/Foundation/deepseek-v3.md",
     "03-research/Foundation/deepseek-mhc.md",
     "DeepSeek MHC.md",
@@ -193,7 +197,6 @@
     "03-research/RAG/rag-agent.md",
     "01-training/grpo.md",
     "03-research/Agent",
-    "03-research/00-overview.md",
     "03-research/Foundation",
     "01-training/ppo.md",
     "01-training/dpo.md",
