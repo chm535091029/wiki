@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "72e8cd5114ee4cc1",
+        "id": "e75de129b283f48f",
         "type": "tabs",
         "children": [
           {
-            "id": "3256309775e203a0",
+            "id": "81a9bc07d492ad4a",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "03-research/Agent/prompt-engineering/prompt-engineering-servey.md",
-                "mode": "preview",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "prompt-engineering-servey"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "关系图谱"
             }
           }
         ]
@@ -183,8 +179,15 @@
       "bases:新建数据库": false
     }
   },
-  "active": "3256309775e203a0",
+  "active": "81a9bc07d492ad4a",
   "lastOpenFiles": [
+    "03-research/Agent/agentic-search/agentic-search-harness.md",
+    "03-research/Agent/agentic-search",
+    "03-research/Agent/search/agentic-search-harness.md",
+    "03-research/RAG/agentic-search-harness.md",
+    "03-research/Agent/search",
+    "03-research/RAG/llm-wiki/llm-wiki.md",
+    "03-research/Agent/prompt-engineering/prompt-engineering-servey.md",
     "03-research/Agent/context-engineering/memory/claude-code-memory.md",
     "03-research/Foundation/deepseek-v4.md",
     "03-research/Foundation/deepseek-v3.md",
@@ -194,7 +197,6 @@
     "03-research/Agent/context-engineering/context-compression",
     "03-research/Agent/context-engineering/memory",
     "03-research/Agent/context-engineering",
-    "03-research/RAG/llm-wiki/llm-wiki.md",
     "03-research/00-overview.md",
     "DeepSeek MHC.md",
     "DeepSeek V3.2.md",
@@ -207,8 +209,6 @@
     "03-research/Foundation",
     "01-training/ppo.md",
     "01-training/dpo.md",
-    "03-research/RAG",
-    "03-research",
     "04-research/deepseek-v4.md",
     "04-research/deepseek-v3.md",
     "04-research/00-overview.md",
@@ -217,10 +217,6 @@
     "03-application/00-overview.md",
     "02-deployment/modelscope.md",
     "02-deployment/vllm.md",
-    "02-deployment/torchserve.md",
-    "02-deployment/sglang.md",
-    "02-deployment/inference.md",
-    "02-deployment/fastapi.md",
     "未命名.canvas"
   ]
 }
