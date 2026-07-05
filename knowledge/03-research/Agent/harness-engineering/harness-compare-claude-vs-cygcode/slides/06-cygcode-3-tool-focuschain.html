@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>06 · CygCode 防线 3-4 + 进度追踪</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  body { background: var(--bg-warm); }
+  .content { overflow-y: auto; }
+
+  .defense-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 6px 0; }
+  .def-card {
+    background: var(--bg-card); border-radius: 12px;
+    border: 1px solid var(--border-light); overflow: hidden;
+  }
+  .def-card .def-head {
+    padding: 10px 18px; display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 20px; border-bottom: 1px solid var(--border-light);
+  }
+  .def-card .def-body { padding: 10px 18px; }
+  .def-card .def-body p { font-size: 20px; line-height: 1.4; margin-bottom: 4px; }
+  .def-card .def-body ul { font-size: 18px; padding-left: 16px; margin: 3px 0; line-height: 1.4; }
+  .def-card .def-body li { margin-bottom: 2px; }
+  .def-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+
+  .progress-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 6px 0; }
+  .prog-card {
+    background: var(--bg-card); border-radius: 10px; border: 1px solid var(--border-light); padding: 12px 16px;
+  }
+  .prog-card h3 { font-size: 22px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .prog-card p { font-size: 20px; line-height: 1.4; margin-bottom: 3px; }
+  .prog-card ul { font-size: 18px; padding-left: 16px; margin: 3px 0; line-height: 1.4; }
+  .prog-card li { margin-bottom: 2px; }
+  .prog-card .example {
+    font-family: var(--font-mono); font-size: 16px; line-height: 1.4;
+    background: var(--bg-card-alt); border-radius: 6px; padding: 6px 10px; margin: 4px 0;
+    border-left: 3px solid var(--border-light);
+  }
+
+  .flow-diagram {
+    background: var(--bg-card); border-radius: 10px; border: 1px solid var(--border-light);
+    padding: 10px 18px; margin: 4px 0;
+  }
+  .flow-diagram .mono {
+    font-family: var(--font-mono); font-size: 17px; line-height: 1.5; white-space: pre-wrap;
+  }
+  .flow-diagram .step { color: var(--accent-cyg); font-weight: 700; }
+  .flow-diagram .cond { color: var(--accent-gold); font-weight: 600; }
+  .flow-diagram .result { color: var(--accent-shared); }
+
+  .tag-sm { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 15px; font-weight: 600; margin: 1px; }
+  .tag-fc { background: rgba(196,69,54,0.06); color: var(--accent-cyg); }
+  .tag-tw { background: rgba(45,106,111,0.06); color: var(--accent-claude); }
+  .tag-update { background: rgba(196,149,74,0.12); color: var(--accent-gold); }
+
+  h2 { font-size: 36px !important; }
+</style>
+</head>
+<body>
+<div class="page-inner">
+  <div class="page-header">
+    <div class="logo-bar">
+      <span class="dot-cyg"></span> CygCode
+      <span class="sep">·</span>
+      <span class="dot-claude"></span> Claude Code
+    </div>
+    <div class="tag">Harness Engineering · 调研报告</div>
+  </div>
+  <div class="content">
+    <div class="kicker cyg">CygCode · 防线 3-4 + 进度追踪对比</div>
+    <h2>Tool 协议 · FocusChain · 进度追踪机制对比</h2>
+
+    <div class="defense-grid">
+      <!-- Line 3 -->
+      <div class="def-card" style="border-left:4px solid var(--accent-cyg);">
+        <div class="def-head" style="border-bottom:1px solid var(--border-light);">
+          <span class="def-num" style="background:rgba(196,69,54,0.12); color:var(--accent-cyg);">3</span>
+          Tool 协议（硬约束）
+        </div>
+        <div class="def-body">
+          <p><strong>XML 标签 / Native Tool Calls</strong> — 两种模式</p>
+          <ul>
+            <li>17 个内置工具，参数 schema 严格定义</li>
+            <li>attempt_completion：必须验证任务要求，result 不能以问句结尾</li>
+            <li>ask_followup_question：唯一合法的提问方式</li>
+            <li>plan_mode_respond：PLAN 模式下唯一输出方式</li>
+            <li>replace_in_file：硬性 XML 格式（完整行匹配、准确 marker）</li>
+            <li>task_progress 参数：所有工具调用的可选参数，Harness 从中提取进度</li>
+          </ul>
+        </div>
+      </div>
+      <!-- Line 4 -->
+      <div class="def-card" style="border-left:4px solid var(--accent-cyg);">
+        <div class="def-head" style="border-bottom:1px solid var(--border-light);">
+          <span class="def-num" style="background:rgba(196,69,54,0.12); color:var(--accent-cyg);">4</span>
+          FocusChain（进度锚定）
+        </div>
+        <div class="def-body">
+          <p><strong>任务进度从模型短期记忆→持久化状态机</strong></p>
+          <ul>
+            <li>清单存储在磁盘文件，支持持久化、外部可编辑、双向同步、文件监听</li>
+            <li>task_progress 设计为所有工具调用的可选参数</li>
+            <li>模型可跳过字段（不影响工具执行），但 Harness 每隔 N 轮强制提醒</li>
+            <li>Harness 解析 task_progress 后：写文件到磁盘、通知 UI 更新、重置计数器、触发 telemetry</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- FocusChain detail -->
+    <p style="margin-top:4px;"><strong>FocusChain 注入场景（6 种） + Interval 门控</strong> <span class="tag-sm tag-update">2026-06-17</span></p>
+    <div class="flow-diagram">
+      <div class="mono">
+<span class="cond">PLAN MODE 下每轮</span> → <span class="result">planModeReminder（弱提示）</span>
+<span class="cond">从 PLAN 切到 ACT</span> → <span class="result">initial（强要求创建清单）</span>
+<span class="cond">用户编辑了清单文件</span> → <span class="result">update + 提示「用户已修改」</span>
+<span class="cond">已达 remindClineInterval（默认 6）轮未更新</span> → <span class="result">reminder（督促更新）</span>
+<span class="cond">第 1 轮且无清单</span> → <span class="result">recommended（建议创建）</span>
+<span class="cond">多轮还没清单</span> → <span class="result">apiRequestCount（强烈催促）</span>
+
+<span class="step">★ Interval 门控机制：</span>
+  skipTaskProgress = !reachedReminderInterval
+  skipSkillWorkflow = skipTaskProgress  ← 同一布尔值控制
+  当 apiRequestsSinceLastTodoUpdate < 6 → 两者均跳过
+  当 apiRequestsSinceLastTodoUpdate &ge; 6 → 两者均强制校验
+  豁免工具（始终不强制）：todo / act_mode / plan_mode
+
+<span class="step">★ Todo 列表结果标注：</span>
+  - [x] 创建组件 (用了 React.FC + TypeScript)  ← 完成项后标注结果
+  todo 列表需参考 skill、rules 和 workflows 来写
+      </div>
+    </div>
+
+    <!-- Progress comparison side by side -->
+    <p style="margin-top:4px;"><strong>进度追踪机制对比</strong></p>
+    <div class="progress-compare">
+      <div class="prog-card" style="border-left:4px solid var(--accent-cyg);">
+        <h3><span class="dot-cyg" style="width:10px;height:10px;border-radius:50%;background:var(--accent-cyg);display:inline-block;"></span> CygCode FocusChain</h3>
+        <p><strong>文件级持久化</strong> — 模型不依赖自身记忆</p>
+        <ul>
+          <li>清单存储在<strong>磁盘文件</strong>中，任务中断后重启仍能看到进度</li>
+          <li><strong>外部可编辑</strong>：用户勾掉某项 → 系统感知 → 下一轮提示</li>
+          <li><strong>双向同步</strong>：UI ↔ 磁盘 ↔ LLM 上下文实时一致</li>
+          <li><strong>文件监听</strong>：避免编辑过程中的假阳性更新</li>
+          <li><strong>task_progress 参数</strong>：可跳过但会被提醒</li>
+          <li><strong>Interval 门控</strong>：默认 6 轮才强制校验，减少每轮开销</li>
+          <li><strong>进度注入时机</strong>：PLAN 弱提示、切 ACT 强要求、6 轮督促、第 1 轮建议、多轮强催</li>
+          <li><strong>结果标注</strong>：完成项后必须标注结果/发现</li>
+        </ul>
+        <div class="example">- [x] 读文件 (用了 fs.readFile)
+- [x] 改代码 (重构了 api.ts)
+- [ ] 测试
+- [ ] 验证
+- [ ] 提交</div>
+      </div>
+      <div class="prog-card" style="border-left:4px solid var(--accent-claude);">
+        <h3><span class="dot-claude" style="width:10px;height:10px;border-radius:50%;background:var(--accent-claude);display:inline-block;"></span> CC TodoWrite + Task V2 <span class="tag-sm tag-update">4 工具+1存储</span></h3>
+        <p><strong>V1 TodoWrite (deferred) + V2 四工具系统 (file-persisted)</strong></p>
+        <ul>
+          <li><strong>V1 TodoWrite</strong>：shouldDefer=true，patch appState.todos[agentId]，自动清理</li>
+          <li><strong>V2 四工具</strong>：TaskCreate / TaskGet / TaskList / TaskUpdate（4个独立工具，均 shouldDefer=true）</li>
+          <li><strong>V2 存储</strong>：~/.cline/tasks/{taskListId}/ 下独立 JSON 文件 + .lock + .highwatermark</li>
+          <li><strong>V2 TaskUpdate 6 操作</strong>：标记状态/完成(含验证nudge)/删除(硬unlink)/修改描述/设依赖/分配owner</li>
+          <li><strong>提醒周期</strong>：10 轮未使用工具 + 10 轮未提醒 → 注入 isMeta 元消息</li>
+          <li><strong>V1 状态</strong>：AppStateStore.todos[agentId]（不持久化，从 transcript 恢复）</li>
+          <li><strong>V2 状态</strong>：独立 JSON 文件（持久化，不依赖 transcript）</li>
+          <li><strong>任务依赖</strong>：V2 支持双向依赖（blocks/blockedBy），TaskList 自动过滤已完成 blocker</li>
+          <li><strong>Desktop 集成</strong>：同时监听 TodoWrite（V1）和 TaskCreate/TaskUpdate（V2）tool_use</li>
+          <li><strong>按 agent 隔离</strong>：每个 subagent 有独立的 todo/task 列表</li>
+        </ul>
+        <div class="example">V2 完整生命周期：
+TaskCreate("用户注册")→[in_progress]→TaskUpdate(id:2,addBlockedBy:["1"])→[completed]
+→ TaskList→自动流转至下一个→TaskUpdate(id:2,status:"in_progress")
+删除: TaskUpdate({id:4, status:"deleted"}) ← unlink 文件+清除依赖引用
+修改: TaskUpdate({id:3, subject:"新描述"}) ← 增量字段更新</div>
+      </div>
+    </div>
+
+    <!-- Key difference table -->
+    <p><strong>核心差异</strong></p>
+    <div class="flow-diagram">
+      <div class="mono">
+<span class="cond">FocusChain</span> 磁盘文件 + 文件监听 + 用户可编辑 + task_progress 参数（所有工具调用可选传入）
+  → 更强调「用户外部干预」和「文件级持久化」
+  → Interval 门控减少每轮 token 开销
+  → 结果标注确保每步有产出记录
+<span class="cond">TodoWrite/Task V2</span> appState.todos[agentId] + V2 文件持久化 + Plan Mode 封闭状态机
+  → 更强调「状态机封闭性」和「自驱验证闭环」
+  → V1/V2 两套并行，通过 feature flag 切换
+  → 提醒周期（10+10 轮）= 比 FocusChain 的默认 6 轮更宽松
+  <span class="step">共同点</span>：跨 iteration 持久、可被强制提醒、不依赖模型记忆
+</div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span>CygCode · Tool 硬约束 + FocusChain 6 场景 + Interval 门控 + 进度对比 (CC V1/V2 详情)</span>
+    <span>06</span>
+  </div>
+</div>
+</body>
+</html>

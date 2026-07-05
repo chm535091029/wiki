@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>05 · CygCode 防线 1-2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  body { background: var(--bg-warm); }
+  .defense-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; flex: 1; align-content:center; }
+  .def-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+  }
+  .def-card .def-head {
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 24px;
+  }
+  .def-card .def-body { padding: 14px 24px; }
+  .def-card .def-body p { font-size: 24px; line-height: 1.4; margin-bottom: 6px; }
+  .def-card .def-body p:last-child { margin-bottom: 0; }
+  .def-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .section-list { list-style: none; padding: 0; margin: 6px 0; }
+  .section-list li {
+    font-size: 20px;
+    padding: 3px 0 3px 12px;
+    border-left: 2px solid var(--border-light);
+    margin-bottom: 2px;
+    color: var(--text-body);
+  }
+  .section-list li.imp { border-left-color: var(--accent-cyg); font-weight: 600; }
+
+  .env-box {
+    font-family: var(--font-mono);
+    font-size: 17px;
+    line-height: 1.45;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--text-body);
+    white-space: pre-wrap;
+    margin-top: 6px;
+  }
+  .flow-box {
+    font-family: var(--font-mono);
+    font-size: 17px;
+    line-height: 1.5;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 8px 14px;
+    white-space: pre-wrap;
+    margin-top: 6px;
+    color: var(--accent-cyg);
+  }
+  .tiny-tag { font-size: 15px; display: inline-block; padding: 1px 9px; border-radius: 99px; background: rgba(196,69,54,0.06); color: var(--accent-cyg); margin: 1px; }
+  .def-card .def-body p.sm { font-size: 20px; }
+  .tag-update { font-size: 14px; display: inline-block; padding: 1px 8px; border-radius: 4px; background: rgba(196,149,74,0.12); color: var(--accent-gold); margin: 1px; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="page-inner">
+  <div class="page-header">
+    <div class="logo-bar">
+      <span class="dot-cyg"></span> CygCode
+      <span class="sep">·</span>
+      <span class="dot-claude"></span> Claude Code
+    </div>
+    <div class="tag">Harness Engineering · 调研报告</div>
+  </div>
+  <div class="content">
+    <div class="kicker cyg">CygCode · Line of Defense 1 & 2 · 上下文工程</div>
+    <h2>第一、二道防线：System Prompt + User Message</h2>
+
+    <div class="defense-grid">
+      <!-- Line 1 -->
+      <div class="def-card" style="border-left:4px solid var(--accent-cyg);">
+        <div class="def-head" style="border-bottom:1px solid var(--border-light);">
+          <span class="def-num" style="background:rgba(196,69,54,0.12); color:var(--accent-cyg);">1</span>
+          System Prompt
+        </div>
+        <div class="def-body">
+          <p><strong>组件化模板引擎 · 每轮完整重建</strong></p>
+          <div class="flow-box">PromptBuilder.build()
+ ① buildComponents()        → 串行 13 个 Section
+ ② preparePlaceholders()    → variant/标准/运行时
+ ③ templateEngine.resolve() → 替换占位符
+ ④ postProcess()            → 清理空 section</div>
+          <p class="sm"><strong>拼装顺序</strong>（generic variant）：</p>
+          <ul class="section-list">
+            <li>AGENT_ROLE · TOOL_USE · TASK_PROGRESS <span class="tiny-tag">条件</span></li>
+            <li>MCP <span class="tiny-tag">条件</span> · EDITING_FILES · ACT_VS_PLAN</li>
+            <li>CAPABILITIES · SKILLS <span class="tiny-tag">条件</span> · FEEDBACK</li>
+            <li class="imp">RULES · SYSTEM_INFO</li>
+            <li class="imp">OBJECTIVE（宪法 7 条：thinking → 问缺参 → 验证 → 禁问句）</li>
+            <li class="imp">USER_INSTRUCTIONS（8 类规则唯一注入点）</li>
+          </ul>
+          <p class="sm"><strong>✦ Variant 系统</strong>：generic / next-gen / xs<br>
+          <strong>✦ Key</strong>：SP <strong>不缓存</strong> — 每轮完整重建保证规则/Skills 实时生效</p>
+        </div>
+      </div>
+
+      <!-- Line 2 -->
+      <div class="def-card" style="border-left:4px solid var(--accent-cyg);">
+        <div class="def-head" style="border-bottom:1px solid var(--border-light);">
+          <span class="def-num" style="background:rgba(196,69,54,0.12); color:var(--accent-cyg);">2</span>
+          User Message
+        </div>
+        <div class="def-body">
+          <p><strong>三层追加 · 动态状态注入</strong></p>
+          <div class="flow-box">A. 基础内容：task / user_message / file_content / image / hook
+B. loadContext 处理：@file: 解析 + /cmd 匹配
+C. ★ 每轮追加（<span class="tag-update">2026-06-17 重排</span>）：
+   1. <environment_details>（精简版，仅 Current Mode）
+   2. FocusChain todo list（条件性，interval 门控）
+   3. <explicit_instructions>（可选，独立注入）
+   4. <workflow_execution_override>（可选，最后一条）
+   5. <summarize_task>（可选）</div>
+          <p class="sm"><strong>✦ environment_details 精简</strong> <span class="tag-update">2026-06-17</span></p>
+          <div class="env-box"># Current Mode（ACT / PLAN）  ← 仅有效字段
+[可选] # Workspace Roots（multi-root 时）
+其他字段已注释屏蔽（保留旧代码但不生效）</div>
+          <p class="sm">
+            <strong>✦ 静态环境信息</strong> 改由 SYSTEM_INFO_SECTION 提供<br>
+            <strong>✦ Workflow</strong> 不进 SP → user message 按需注入<br>
+            <strong>✦ Skills</strong> 仅元数据进 SP，正文调 use_skill 后加载
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span>CygCode · 组件化 System Prompt + 3 层 User Message 构建管线（environment_details 精简）</span>
+    <span>05</span>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>02 · 两套架构总览</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  body { background: var(--bg-warm); }
+  .arch-header { font-size: 14px; letter-spacing: 0.08em; margin-bottom: 10px; font-weight: 600; }
+  .arch-label { font-size: 11px; letter-spacing: 0.06em; font-weight: 600; text-transform: uppercase; }
+  .frame {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+  }
+  .frame-title {
+    padding: 12px 20px;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .frame-title .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .frame-body { padding: 16px 20px; }
+  .layer-list { list-style: none; padding: 0; margin: 0; }
+  .layer-list li {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 6px 0;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    line-height: 1.4;
+  }
+  .layer-list li:last-child { border-bottom: none; }
+  .layer-tag {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 1px;
+  }
+  .tag-l1 { background: rgba(90,83,70,0.12); color: var(--accent-shared); }
+  .tag-l2 { background: rgba(196,69,54,0.12); color: var(--accent-cyg); }
+  .tag-l3 { background: rgba(45,106,111,0.12); color: var(--accent-claude); }
+  .tag-l4 { background: rgba(196,149,74,0.12); color: #8a6e30; }
+  .tag-l5 { background: rgba(90,83,70,0.1); color: var(--accent-shared); }
+  .tag-l6 { background: rgba(196,69,54,0.1); color: var(--accent-cyg); }
+  .tag-l7 { background: rgba(45,106,111,0.1); color: var(--accent-claude); }
+  .tag-l8 { background: rgba(196,149,74,0.1); color: #8a6e30; }
+
+  .layer-list li .layer-name { font-weight: 600; }
+  .layer-list li .layer-desc { color: var(--text-muted); }
+
+  .align-middle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .vs-circle {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+<div class="page-inner">
+  <div class="page-header">
+    <div class="logo-bar">
+      <span class="dot-cyg"></span> CygCode
+      <span class="sep">·</span>
+      <span class="dot-claude"></span> Claude Code
+    </div>
+    <div class="tag">Harness Engineering · 调研报告</div>
+  </div>
+
+  <div class="content">
+    <div class="kicker">Total Architecture</div>
+    <h2>两套 Harness 体系总览</h2>
+
+    <div style="display:grid; grid-template-columns: 1fr auto 1fr; gap: 28px; flex:1; align-content:center;">
+      <!-- CygCode -->
+      <div class="frame" style="border-left: 4px solid var(--accent-cyg);">
+        <div class="frame-title">
+          <span class="dot" style="background:var(--accent-cyg);"></span>
+          CygCode · 四道防线 + 四辅助
+        </div>
+        <div class="frame-body">
+          <ul class="layer-list">
+            <li><span class="layer-tag tag-l2">1</span><div><span class="layer-name">System Prompt</span><br><span class="layer-desc">静态契约 · 每轮重建 · 12 Section</span></div></li>
+            <li><span class="layer-tag tag-l2">2</span><div><span class="layer-name">User Message</span><br><span class="layer-desc">动态状态 · environment_details · Workflow</span></div></li>
+            <li><span class="layer-tag tag-l3">3</span><div><span class="layer-name">Tool 协议</span><br><span class="layer-desc">行动约束 · XML schema · Permission</span></div></li>
+            <li><span class="layer-tag tag-l4">4</span><div><span class="layer-name">FocusChain</span><br><span class="layer-desc">任务进度 · 持久化 · 跨轮次状态机</span></div></li>
+          </ul>
+          <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border-light);">
+            <div style="font-size:12px; font-weight:600; color:var(--text-muted); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:6px;">四辅助系统</div>
+            <div style="display:flex; flex-wrap:wrap; gap:4px;">
+              <span class="label label-layer">ContextManager</span>
+              <span class="label label-layer">PLAN/ACT Mode</span>
+              <span class="label label-layer">Hooks</span>
+              <span class="label label-layer">Rules / Skills / Workflows</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VS -->
+      <div class="align-middle">
+        <div class="vs-circle">VS</div>
+      </div>
+
+      <!-- Claude Code -->
+      <div class="frame" style="border-left: 4px solid var(--accent-claude);">
+        <div class="frame-title">
+          <span class="dot" style="background:var(--accent-claude);"></span>
+          Claude Code · 八层纵深防御
+        </div>
+        <div class="frame-body">
+          <ul class="layer-list">
+            <li><span class="layer-tag tag-l1">L1</span><div><span class="layer-name">System Prompt 静态段</span><br><span class="layer-desc">byte-stable 行为宪法 · cache</span></div></li>
+            <li><span class="layer-tag tag-l2">L2</span><div><span class="layer-name">Rules 注入</span><br><span class="layer-desc">CLAUDE.md · 5层加载 · 每轮重新注入</span></div></li>
+            <li><span class="layer-tag tag-l3">L3</span><div><span class="layer-name">Permission 模式</span><br><span class="layer-desc">Tool 守门员 · 六种 mode · canUseTool</span></div></li>
+            <li><span class="layer-tag tag-l4">L4</span><div><span class="layer-name">Hooks 拦截器</span><br><span class="layer-desc">27 个生命周期事件 · 可编程</span></div></li>
+            <li><span class="layer-tag tag-l5">L5</span><div><span class="layer-name">TodoWrite / Plan Mode</span><br><span class="layer-desc">显式规划 · AppState 状态机</span></div></li>
+            <li><span class="layer-tag tag-l6">L6</span><div><span class="layer-name">Per-Turn 动态附件</span><br><span class="layer-desc">Nudge 系统 · 实时行为提醒</span></div></li>
+            <li><span class="layer-tag tag-l7">L7</span><div><span class="layer-name">压缩后规则再激活</span><br><span class="layer-desc">Compact 不丢约束</span></div></li>
+            <li><span class="layer-tag tag-l8">L8</span><div><span class="layer-name">Subagent 隔离</span><br><span class="layer-desc">规则分舱 · 独立状态</span></div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>架构对比：CycCode 4+4 层 vs Claude Code 8 层</span>
+    <span>02</span>
+  </div>
+</div>
+</body>
+</html>

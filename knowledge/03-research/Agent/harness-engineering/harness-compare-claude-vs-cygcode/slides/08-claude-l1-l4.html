@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>08 · Claude Code L1-L4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  body { background: var(--bg-warm); }
+  .layers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; flex: 1; align-content: center; }
+  .l-card {
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+  }
+  .l-card .l-head {
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 20px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .l-card .l-body { padding: 10px 18px; }
+  .l-card .l-body p { font-size: 20px; line-height: 1.4; margin-bottom: 4px; }
+  .l-card .l-body p:last-child { margin-bottom: 0; }
+  .l-tag { display: inline-flex; width: 30px; height: 30px; border-radius: 50%; font-size: 14px; font-weight: 700; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  .flow-mono {
+    font-family: var(--font-mono); font-size: 16px; line-height: 1.4;
+    background: var(--bg-card-alt); border-radius: 6px; padding: 6px 10px;
+    white-space: pre-wrap; margin: 4px 0;
+    color: var(--accent-claude);
+  }
+  .rules-5 { font-size: 18px; display: flex; flex-direction: column; gap: 2px; margin: 4px 0; }
+  .rules-5 span { display: inline-block; padding: 2px 8px; border-radius: 4px; background: rgba(45,106,111,0.04); }
+  .tag-sm { font-size: 15px; display:inline-block; padding:1px 8px; border-radius:99px; background:rgba(45,106,111,0.06); color:var(--accent-claude); margin:1px; }
+  .hook-events { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+  .hook-events span { font-size: 15px; padding: 1px 8px; border-radius: 3px; background: rgba(45,106,111,0.04); color: var(--accent-claude); }
+  .perm-stack { font-family: var(--font-mono); font-size: 15px; line-height: 1.4; background: var(--bg-card-alt); border-radius: 6px; padding: 6px 10px; white-space: pre-wrap; margin-top: 4px; color: var(--text-body); }
+</style>
+</head>
+<body>
+<div class="page-inner">
+  <div class="page-header">
+    <div class="logo-bar">
+      <span class="dot-cyg"></span> CygCode
+      <span class="sep">·</span>
+      <span class="dot-claude"></span> Claude Code
+    </div>
+    <div class="tag">Harness Engineering · 调研报告</div>
+  </div>
+  <div class="content">
+    <div class="kicker claude">Claude Code · Layers 1-4 · Context Engineering</div>
+    <h2>防御底层：宪法 · 规则注入 · 权限 · Hooks</h2>
+
+    <div class="layers-grid">
+      <div class="l-card" style="border-left:3px solid var(--accent-shared);">
+        <div class="l-head"><span class="l-tag" style="background:rgba(90,83,70,0.1);color:var(--accent-shared);">L1</span> System Prompt</div>
+        <div class="l-body">
+          <p><strong>byte-stable 行为宪法 + 静态/动态分离</strong></p>
+          <div class="flow-mono">[静态段] 跨 session 缓存
+  intro → system → doing tasks → actions → using tools → tone
+========== BOUNDARY ==========
+[动态段] per-session/per-turn 重算
+  session_guidance · memory · env_info · language · mcp</div>
+          <p><span class="tag-sm">BOUNDARY</span> 切分 static(global cache) vs dynamic(null cache)</p>
+        </div>
+      </div>
+      <div class="l-card" style="border-left:3px solid var(--accent-cyg);">
+        <div class="l-head"><span class="l-tag" style="background:rgba(196,69,54,0.1);color:var(--accent-cyg);">L2</span> Rules 注入</div>
+        <div class="l-body">
+          <p><strong>5 层优先级 + 条件激活 + 子目录嵌套 + @include</strong></p>
+          <div class="rules-5">
+            <span>Managed < User < Project < Local < AutoMem</span>
+          </div>
+          <div class="flow-mono">prependUserContext() → messages[0]={isMeta, Rules}
+  不进 system prompt、不进 REPL UI、每轮重新 prepend</div>
+          <p><strong>Conditional Rules</strong>：frontmatter paths:"src/**/*.ts" → 按路径匹配，不匹配不消耗 context</p>
+          <p><strong>Nested Memory</strong>：子目录 CLAUDE.md → agent 进入时自动注入</p>
+          <p><strong>@include</strong>：@path 引用其他文件，单文件 40000 字符上限，60+ 扩展名</p>
+        </div>
+      </div>
+      <div class="l-card" style="border-left:3px solid var(--accent-claude);">
+        <div class="l-head"><span class="l-tag" style="background:rgba(45,106,111,0.1);color:var(--accent-claude);">L3</span> Permission 模式（6 种 + 切换）</div>
+        <div class="l-body">
+          <p><strong>每个 tool_use 前必走 5 级判定栈</strong></p>
+          <div class="perm-stack">[1] Hook permission (allow/deny/ask)
+[2] Tool.requiresUserInteraction()?
+[3] settings.json rule match (allow/deny/ask)
+[4] Mode default (见下方 6 种 mode)
+[5] Classifier (auto mode 才走)
+— deny > hook allow — 防御纵深</div>
+          <p><strong>6 种 Mode 与切换</strong></p>
+          <div class="flow-mono" style="font-size:14px;">
+<span style="color:var(--accent-claude);font-weight:700;">default</span>     → 每个非读工具需用户确认（通用默认）
+<span style="color:var(--accent-claude);font-weight:700;">plan</span>        → 禁止写操作，只能跑只读工具
+                    → EnterPlanMode 工具调用 → 切换到 plan
+                    → prePlanMode 保存旧 mode → 退出时恢复
+<span style="color:var(--accent-claude);font-weight:700;">acceptEdits</span> → 自动批准 Edit/Write，其他需确认
+                    → settings.json 或 /acceptEdits 命令切换
+<span style="color:var(--accent-claude);font-weight:700;">bypassPermissions</span>→ 全自动（CI/脚本场景）
+                    → --bypass-permissions 启动参数
+<span style="color:var(--accent-claude);font-weight:700;">dontAsk</span>     → 拒绝非白名单操作（严格环境）
+                    → settings.json deny 规则 + dontAsk mode
+<span style="color:var(--accent-claude);font-weight:700;">auto</span>        → transcript classifier 决定
+                    → AI 自动分析对话决定 allow/ask/deny
+          </div>
+          <p><strong>会话级持久</strong>：mode 存 appState.toolPermissionContext.mode，每轮 query 传给 toolUseContext</p>
+          <p><strong>plan mode 封闭状态机</strong>：EnterPlanMode → 写 plan → ExitPlanMode(保存到文件) → VerifyPlanExecution</p>
+        </div>
+      </div>
+      <div class="l-card" style="border-left:3px solid var(--accent-gold);">
+        <div class="l-head"><span class="l-tag" style="background:rgba(196,149,74,0.1);color:#8a6e30;">L4</span> Hooks 拦截器</div>
+        <div class="l-body">
+          <p><strong>27 个生命周期事件</strong> · command / prompt / http / callback</p>
+          <div class="hook-events">
+            <span>SessionStart</span> <span>PreToolUse</span> <span>PostToolUse</span>
+            <span>UserPromptSubmit</span> <span>Stop</span> <span>PreCompact</span>
+            <span>PostCompact</span> <span>SubagentStart</span> <span>SubagentStop</span>
+            <span>PermissionRequest</span> <span>CwdChanged</span> <span>InstructionsLoaded</span>
+            <span>TaskCreated</span> <span>FileChanged</span>
+          </div>
+          <p><strong>PreToolUse</strong>：改写参数 / 注入 context / 阻止 · <strong>PostCompact</strong>：压缩后重新注入（L7 标准化机制）</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span>CC · 静态/动态分离 → 5 层 Rules + 条件+嵌套+@include → Permission 6 mode+切换 → 27 Hooks</span>
+    <span>08</span>
+  </div>
+</div>
+</body>
+</html>

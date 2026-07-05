@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>14 · 结论与原则</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  body { background: var(--bg-warm); }
+  .two-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; flex:1; align-content:center; }
+  .panel {
+    background: var(--bg-card);
+    border-radius: 14px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+  }
+  .panel-head {
+    padding: 14px 24px;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .panel-body { padding: 18px 24px; }
+  .panel-body ul { font-size: 15px; padding-left: 18px; line-height: 1.55; }
+  .panel-body li { margin-bottom: 8px; }
+  .panel-body li:last-child { margin-bottom: 0; }
+
+  .bottom-box {
+    margin-top: 14px;
+    background: var(--bg-dark);
+    border-radius: 12px;
+    padding: 18px 32px;
+    color: var(--text-on-dark);
+    text-align: center;
+  }
+  .bottom-box .big-text {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent-gold);
+    margin-bottom: 8px;
+  }
+  .bottom-box p { font-size: 17px; color: var(--text-on-dark-m); line-height: 1.5; margin: 0; }
+</style>
+</head>
+<body>
+<div class="page-inner">
+  <div class="page-header">
+    <div class="logo-bar">
+      <span class="dot-cyg"></span> CygCode
+      <span class="sep">·</span>
+      <span class="dot-claude"></span> Claude Code
+    </div>
+    <div class="tag">Harness Engineering · 调研报告</div>
+  </div>
+  <div class="content" style="justify-content:center;">
+    <div class="kicker">Conclusion · 工程原则</div>
+    <h2>核心结论：Harness 工程的 7 条通用原则</h2>
+
+    <div class="two-panel">
+      <!-- 每条原则列表 -->
+      <div class="panel" style="border-left:4px solid var(--accent-cyg);">
+        <div class="panel-head">CygCode 角度的洞察</div>
+        <div class="panel-body">
+          <ul>
+            <li><strong>每轮重建</strong>：12 Section 完整重建，规则改动立即可见</li>
+            <li><strong>Variant 系统</strong>：按模型能力适配措辞力度（generic/next-gen/xs）</li>
+            <li><strong>FocusChain 文件级持久化</strong>：用户可编辑、双向同步、文件监听</li>
+            <li><strong>task_progress 可跳过但会被提醒</strong>：软约束 + 硬催促结合</li>
+            <li><strong>软硬约束多层冗余</strong>：同一约束在 System Prompt + Tool Schema + FocusChain + Rules 多处独立表达</li>
+          </ul>
+        </div>
+      </div>
+      <div class="panel" style="border-left:4px solid var(--accent-claude);">
+        <div class="panel-head">Claude Code 角度的洞察</div>
+        <div class="panel-body">
+          <ul>
+            <li><strong>byte-stable 缓存</strong>：静态/动态分离降低 token 消耗</li>
+            <li><strong>27 个 Hook 事件</strong>：规则可编程化的天花板</li>
+            <li><strong>Subagent 规则分舱</strong>：多 Agent 协作时规则随委派分割</li>
+            <li><strong>Compact 不丢约束</strong>：压缩后自动触发 L1-L6 全部再注入</li>
+            <li><strong>Nudge 动态提醒</strong>：基于「刚发生的事件」而非固定模板</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-box">
+      <div class="big-text">两套体系并非竞争，而是投影在不同代码库上的同一方法论</div>
+      <p>根本哲学完全一致：<strong>把 LLM 当作无状态、健忘、易分心的协作者</strong>，所有约束每轮重新注入，形成对状态的外部控制。<br>
+      差异主要在分层粒度（4+4 vs 8）、缓存策略、Subagent 支持和 Hooks 丰富度上。</p>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span>两套体系殊途同归 · 7 条通用工程原则</span>
+    <span>14</span>
+  </div>
+</div>
+</body>
+</html>

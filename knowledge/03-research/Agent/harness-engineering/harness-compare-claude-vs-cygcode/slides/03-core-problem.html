@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>03 · 核心问题</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  body { background: var(--bg-warm); }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; align-content: center; }
+  .prob-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 24px 28px;
+    border: 1px solid var(--border-light);
+    border-top: 3px solid var(--accent-shared);
+  }
+  .prob-card .icon { font-size: 28px; margin-bottom: 8px; }
+  .prob-card h3 { font-size: 22px; margin-bottom: 8px; }
+  .prob-card p { font-size: 17px; color: var(--text-muted); line-height: 1.5; }
+  .conclusion {
+    margin-top: 20px;
+    background: var(--bg-dark);
+    color: var(--text-on-dark);
+    border-radius: 12px;
+    padding: 18px 28px;
+    text-align: center;
+    font-size: 18px;
+  }
+  .conclusion strong { color: var(--accent-gold); }
+</style>
+</head>
+<body>
+<div class="page-inner">
+  <div class="page-header">
+    <div class="logo-bar">
+      <span class="dot-cyg"></span> CygCode
+      <span class="sep">·</span>
+      <span class="dot-claude"></span> Claude Code
+    </div>
+    <div class="tag">Harness Engineering · 调研报告</div>
+  </div>
+  <div class="content">
+    <div class="kicker">Motivation · Why Harness?</div>
+    <h2>LLM 为什么会在多轮对话中「跑偏」</h2>
+    <p style="font-size:17px; color:var(--text-muted); margin-bottom:20px;">两套 Harness 体系的出发点完全一致——识别到 LLM 在多轮 Agent 场景中的四个结构性弱点</p>
+    <div class="grid-4">
+      <div class="prob-card">
+        <div class="icon">↘︎</div>
+        <h3>上下文衰减</h3>
+        <p>早期指令权重相对降低，模型倾向关注最近的内容（recency bias）</p>
+      </div>
+      <div class="prob-card">
+        <div class="icon">↗︎</div>
+        <h3>指令漂移</h3>
+        <p>模型在长任务中倾向于「自己找合理路径」，覆盖或忘掉用户的特殊约束</p>
+      </div>
+      <div class="prob-card">
+        <div class="icon">◻︎</div>
+        <h3>状态丢失</h3>
+        <p>模型是「无状态」的，每轮只能看到 messages；没有「我刚才做到第几步了」的内部记忆</p>
+      </div>
+      <div class="prob-card">
+        <div class="icon">✓</div>
+        <h3>目标偏移</h3>
+        <p>完成若干子目标后，模型容易「宣告完成」而不再检查后续任务</p>
+      </div>
+    </div>
+    <div class="conclusion">
+      <strong>共同结论：</strong> 不能依赖 LLM 自身记忆或自控力。规则必须外化为系统侧强制注入、强制校验、强制纠正的可观测、可调整机制。
+    </div>
+  </div>
+  <div class="page-footer">
+    <span>Harness 的根本动机</span>
+    <span>03</span>
+  </div>
+</div>
+</body>
+</html>

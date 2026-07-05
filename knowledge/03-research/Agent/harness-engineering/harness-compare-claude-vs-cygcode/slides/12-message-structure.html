@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>12 · 消息结构与核心机制详解</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  body { background: var(--bg-warm); }
+  .content { overflow-y: auto; }
+
+  .msg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 4px 0; flex: 1; align-content: start; }
+  .msg-col { display: flex; flex-direction: column; }
+  .msg-col h3 { font-size: 22px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+
+  .msg-struct {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+  }
+  .msg-struct .part { padding: 3px 10px; border-bottom: 1px dashed rgba(0,0,0,0.06); }
+  .msg-struct .part:last-child { border-bottom: none; }
+  .msg-struct .part .label { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; display: block; margin-bottom: 1px; }
+  .msg-struct .part .desc { font-size: 12px; line-height: 1.35; color: var(--text-muted); }
+
+  .msg-struct .sp-layer { background: #fcf9f5; }
+  .msg-struct .sp-layer .label { color: var(--accent-cyg); }
+  .msg-struct .user-msg .label { color: var(--accent-shared); }
+  .msg-struct .assistant-msg .label { color: var(--accent-claude); }
+  .msg-struct .tool-msg .label { color: var(--accent-gold); }
+  .msg-struct .env-msg .label { color: var(--accent-cyg-dim); }
+  .msg-struct .meta-msg .label { color: #8a7e6e; }
+  .msg-struct .nudge-msg .label { color: var(--accent-gold); }
+  .msg-struct .rules-msg .label { color: var(--accent-claude-dim); }
+  .msg-struct .highlight { border-left: 3px solid var(--accent-cyg); padding-left: 10px; }
+  .msg-struct .tag-new { font-size: 11px; color: var(--accent-gold); font-weight: 700; }
+
+  h2 { font-size: 30px !important; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; font-size: 13px; }
+  .legend span { display: inline-flex; align-items: center; gap: 4px; }
+
+  /* Detail cards */
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-top: 6px; }
+  .detail-card {
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+  }
+  .detail-card .dc-head {
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .detail-card .dc-body { padding: 8px 12px; font-size: 12px; line-height: 1.5; }
+  .detail-card .dc-body .flow { font-family: var(--font-mono); font-size: 11px; line-height: 1.45; padding: 5px 8px; background: rgba(0,0,0,0.03); border-radius: 6px; margin: 4px 0; }
+  .detail-card .dc-body strong { color: var(--accent-claude); }
+  .detail-card .dc-body .note { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="page-inner">
+  <div class="page-header">
+    <div class="logo-bar">
+      <span class="dot-cyg"></span> CygCode
+      <span class="sep">·</span>
+      <span class="dot-claude"></span> Claude Code
+    </div>
+    <div class="tag">Harness Engineering · 调研报告</div>
+  </div>
+  <div class="content">
+    <div class="kicker">每轮消息结构 + 四大核心机制</div>
+    <h2>CygCode vs Claude Code — 每轮 API 消息结构对比</h2>
+
+    <div class="legend">
+      <span><span class="dot" style="background:var(--accent-cyg);"></span> System Prompt</span>
+      <span><span class="dot" style="background:var(--accent-shared);"></span> User Message</span>
+      <span><span class="dot" style="background:var(--accent-claude);"></span> Assistant 响应</span>
+      <span><span class="dot" style="background:var(--accent-gold);"></span> Tool 结果/附件</span>
+      <span><span class="dot" style="background:var(--accent-cyg-dim);"></span> 环境/进度注入</span>
+      <span><span class="dot" style="background:#8a7e6e;"></span> 元消息 (isMeta)</span>
+    </div>
+
+    <div class="msg-grid">
+      <!-- CygCode Structure -->
+      <div class="msg-col">
+        <h3><span class="dot-cyg"></span> CygCode</h3>
+        <div class="msg-struct">
+          <div class="part sp-layer">
+            <span class="label">System Prompt（每轮完整重建，13 Section）</span>
+            <span class="desc">AGENT_ROLE · TOOL_USE · TASK_PROGRESS · MCP · EDITING_FILES · ACT_VS_PLAN · CAPABILITIES · SKILLS · FEEDBACK · RULES · SYSTEM_INFO · OBJECTIVE · USER_INSTRUCTIONS</span>
+          </div>
+          <div class="part user-msg">
+            <span class="label">User — A. 基础内容</span>
+            <span class="desc">task / user_message / file_content / image / hook_context</span>
+          </div>
+          <div class="part user-msg">
+            <span class="label">B. loadContext 处理</span>
+            <span class="desc">@file 解析 / /cmd 命令匹配</span>
+          </div>
+          <div class="part env-msg" style="background:#fff8f0;">
+            <span class="label">C. ★ 每轮追加（2026-06-17 重排）</span>
+            <span class="desc">1. environment_details（精简版：仅 Current Mode + Workspace Roots）<br>2. FocusChain Todo List（Interval 门控，完成项标注结果）<br>3. explicit_instructions [workflow, 可选]<br>4. workflow_execution_override [可选，最后]<br>5. summarize_task [可选]</span>
+          </div>
+          <div class="part assistant-msg">
+            <span class="label">Assistant 响应 — 消息组成详解</span>
+            <span class="desc"><strong>四种 content 块</strong>：<br>
+              <span class="tag-new">① redactedThinking</span> 来自 thinking 块的首部<br>
+              <span class="tag-new">② thinking 原文</span> 完整推理过程（thinking / signature / summary）<br>
+              <span class="tag-new">③ text</span> 最终回复 + reasoning_details（从 summary 复制）<br>
+              <span class="tag-new">④ toolUseBlocks</span> 工具调用块<br><br>
+              <strong>保存 vs 发送不对称</strong>：<br>
+              磁盘保存 ✅ 完整 thinking 原文 + text + tool_use<br>
+              API 发送 ❌ thinking 类型被 convertToOpenAiMessages 过滤，仅发 text + tool_use<br>
+              reasoning_details 为 OpenRouter 扩展，DeepSeek 不识别<br>
+              <span style="font-size:11px;color:var(--text-muted);">影响：数千 token 持久化却不用 · ContextManager 截断计数不准 · resume 上下文不一致</span></span>
+          </div>
+          <div class="part tool-msg">
+            <span class="label">Tool Result</span>
+            <span class="desc">Handler 截断（400KB/1000行/200文件）→ ContextManager 去重/截断 → 追加回 messages<br>Subagent: 仅 .trim() 透传，excerpt() 已移除</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CC Structure -->
+      <div class="msg-col">
+        <h3><span class="dot-claude"></span> Claude Code</h3>
+        <div class="msg-struct">
+          <div class="part sp-layer">
+            <span class="label">System Prompt（静态段缓存 + 动态段重算）</span>
+            <span class="desc">[静态·global cache] intro → system → doing tasks → actions → using tools → tone<br>========== BOUNDARY ==========<br>[动态·per-turn] session_guidance · memory · env_info · language · mcp_instructions</span>
+          </div>
+          <div class="part meta-msg" style="background:#f5f4f0;">
+            <span class="label">messages[0] — isMeta User ★ Rules 注入点</span>
+            <span class="desc">{isMeta:true} system-reminder CLAUDE.md（5 层合并）+ currentDate<br>不进 REPL UI、不进 mutableMessages、每轮重新 prepend</span>
+          </div>
+          <div class="part nudge-msg" style="background:#fffcf0;">
+            <span class="label">messages[1..N] — 动态附件 ★ Nudge 注入点</span>
+            <span class="desc">16 种：todo_reminder / plan_mode_reminder / verify_plan / auto_mode / max_turns / compaction_reminder / changed_files / nested_memory / hook_additional_context / 等</span>
+          </div>
+          <div class="part user-msg">
+            <span class="label">真实 User 输入</span>
+            <span class="desc">用户文本 / @file / image base64 / hook_context</span>
+          </div>
+          <div class="part assistant-msg">
+            <span class="label">Assistant 响应</span>
+            <span class="desc">tool_use → L4 PreToolUse hook → L3 canUseTool → 执行 → L4 PostToolUse</span>
+          </div>
+          <div class="part tool-msg">
+            <span class="label">Tool Result（6 层压缩 + 5 层预算）</span>
+            <span class="desc">回写 messages → 下一轮 shrink 管线：budget → snip → microcompact → collapse → autoCompact → normalize → prepend</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Mechanism Detail Cards -->
+    <div style="margin-top:6px;">
+      <p style="font-size:18px; font-weight:700; margin-bottom:4px;">四大核心机制详解</p>
+      <div class="detail-grid">
+        <!-- Card 1: Plan Mode -->
+        <div class="detail-card" style="border-left:4px solid var(--accent-claude);">
+          <div class="dc-head">CC Plan Mode 封闭状态机</div>
+          <div class="dc-body">
+            <strong>三段式闭环</strong>：
+            <div class="flow">EnterPlanMode → [写 plan] → ExitPlanMode → [实现] → VerifyPlanExecution</div>
+            <ul style="margin:4px 0;padding-left:14px;font-size:11px;">
+              <li><strong>prePlanMode 存档</strong>：保存旧 mode，退出时恢复</li>
+              <li><strong>计划持久化</strong>：ExitPlanMode 写 plan 到 ~/.claude/plans/id.md</li>
+              <li><strong>Plan Mode 守卫</strong>：写工具直接不可见</li>
+            </ul>
+            <div class="note">模型永远绕不开 plan → verify 闭环</div>
+          </div>
+        </div>
+
+        <!-- Card 2: Dynamic Skill Discovery -->
+        <div class="detail-card" style="border-left:4px solid var(--accent-gold);">
+          <div class="dc-head">CC 动态 Skill 发现</div>
+          <div class="dc-body">
+            <strong>系统根据行为推断</strong>：
+            <div class="flow">文件操作(Read/Write/Edit)<br>→ discoverSkillDirsForPaths<br>→ 遍历父目录找 .claude/skills/<br>→ addSkillDirectories + clearCommandsCache</div>
+            <div class="note">不靠手动注册，懒加载</div>
+          </div>
+        </div>
+
+        <!-- Card 3: fileStateCache -->
+        <div class="detail-card" style="border-left:4px solid var(--accent-gold);">
+          <div class="dc-head">CC File Read 去重与豁免</div>
+          <div class="dc-body">
+            <strong>双层防御</strong>：
+            <div class="flow">Layer 1: fileStateCache LRU 100/25MB<br>→ 命中返回 "Already read"<br><br>Layer 2: Read 豁免<br>maxResultSizeChars=Infinity<br>→ 不进入 50K 预算层</div>
+            <div class="note">防止"压缩→读→再压缩→再读"死循环</div>
+          </div>
+        </div>
+
+        <!-- Card 4: Hooks 对比（详见第07页） -->
+        <div class="detail-card" style="border-left:4px solid var(--accent-cyg);">
+          <div class="dc-head">Hooks 对比 → 详见第07页</div>
+          <div class="dc-body">
+            <strong>CygCode 5 点</strong> vs <strong>CC 27 点</strong>
+            <div class="flow">CygCode: TaskStart / UserPromptSubmit / TaskResume / TaskCancel / PreCompact
+  → 生命周期事件 · contextModification 注入
+CC:    PreToolUse / PostToolUse / Stop / SubagentStart/Stop / ...等27个
+  → tool执行级拦截 + 生命周期全链路
+  → deny > hook allow，防御纵深</div>
+            <div class="note">完整详解见 07-cygcode-assist.html</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary table -->
+    <div style="margin-top:6px; background:var(--bg-card); border-radius:10px; border:1px solid var(--border-light); padding:10px 16px;">
+      <p style="font-size:17px; font-weight:700; margin-bottom:4px;">核心差异一张表</p>
+      <table style="width:100%; font-size:15px; border-collapse:collapse;">
+        <tr style="border-bottom:1px solid var(--border-light);"><th style="text-align:left;padding:3px 6px;">维度</th><th style="text-align:left;padding:3px 6px;">CygCode</th><th style="text-align:left;padding:3px 6px;">Claude Code</th></tr>
+        <tr><td style="padding:3px 6px;">System Prompt</td><td style="padding:3px 6px;">每轮完整重建，不缓存</td><td style="padding:3px 6px;">静态段跨 session 缓存 + BOUNDARY</td></tr>
+        <tr><td style="padding:3px 6px;">Rules 位置</td><td style="padding:3px 6px;">SP 末尾 USER_INSTRUCTIONS</td><td style="padding:3px 6px;">messages[0] isMeta user</td></tr>
+        <tr><td style="padding:3px 6px;">环境注入</td><td style="padding:3px 6px;">environment_details(精简) + FocusChain</td><td style="padding:3px 6px;">getAttachmentMessages + prependUserContext</td></tr>
+        <tr><td style="padding:3px 6px;">Nudge 附件</td><td style="padding:3px 6px;">无附件系统（FocusChain 在 userContent 内）</td><td style="padding:3px 6px;">16 种动态附件</td></tr>
+        <tr><td style="padding:3px 6px;">Hooks</td><td style="padding:3px 6px;">5 点：任务生命周期</td><td style="padding:3px 6px;">27 点：tool 级 + 生命周期</td></tr>
+        <tr><td style="padding:3px 6px;">User Message 顺序</td><td style="padding:3px 6px;">基础 → loadContext → envDetails → FocusChain → workflow → override → summarize</td><td style="padding:3px 6px;">isMeta → Nudge → 真实用户 → assistant → tool_result</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span>消息结构对比 + CC 四大核心机制 + Hooks 对比（详见第07页）</span>
+    <span>12</span>
+  </div>
+</div>
+</body>
+</html>

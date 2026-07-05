@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>01 · 封面</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  body { background: var(--bg-dark); }
+  .section-hero h1 { font-size: 96px; }
+  .section-hero .subtitle { font-size: 24px; opacity: 0.6; margin-bottom: 40px; }
+  .hero-meta { font-size: 16px; color: var(--text-on-dark-m); letter-spacing: 0.06em; }
+  .hero-meta span { display: inline-block; margin: 0 12px; }
+  .tagline { font-size: 20px; color: var(--accent-gold); letter-spacing: 0.04em; margin-top: 28px; font-weight: 500; }
+  .two-badges { display: flex; gap: 24px; margin-top: 32px; }
+  .badge-hero {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 18px; border-radius: 999px;
+    font-size: 15px; font-weight: 500;
+  }
+  .badge-hero.cyg { background: rgba(196,69,54,0.12); color: #d47a68; border: 1px solid rgba(196,69,54,0.2); }
+  .badge-hero.claude { background: rgba(45,106,111,0.12); color: #52a5ab; border: 1px solid rgba(45,106,111,0.2); }
+</style>
+</head>
+<body class="section-dark">
+<div class="page-inner">
+  <div class="page-header">
+    <div class="logo-bar">
+      <span class="dot-cyg"></span> CygCode
+      <span class="sep">·</span>
+      <span class="dot-claude"></span> Claude Code
+    </div>
+    <div class="tag">Harness Engineering · 调研报告</div>
+  </div>
+
+  <div class="content" style="justify-content:center; padding-top:0;">
+    <div class="section-hero">
+      <div class="kicker" style="color:var(--accent-gold); margin-bottom:12px;">Agent Harness Engineering</div>
+      <h1 style="font-size:102px;">对抗 LLM 多轮跑偏</h1>
+      <h1 style="font-size:78px; margin-bottom:24px; font-weight:600;">的两套系统方法论</h1>
+      <div class="accent-line gold" style="margin:0 auto 28px;"></div>
+      <div class="subtitle">CygCode「四道防线」vs Claude Code「八层纵深防御」</div>
+      <div class="two-badges">
+        <div class="badge-hero cyg">● CygCode（Cline Fork）</div>
+        <div class="badge-hero claude">● Claude Code（Anthropic）</div>
+      </div>
+      <div class="tagline">不依赖模型记忆，把约束每轮重新推到模型面前</div>
+      <div class="hero-meta" style="margin-top:48px;">
+        <span>调研报告 · 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Harness Engineering · 系统方法论对比</span>
+    <span>01</span>
+  </div>
+  <div class="overlay-subtle"></div>
+</div>
+</body>
+</html>

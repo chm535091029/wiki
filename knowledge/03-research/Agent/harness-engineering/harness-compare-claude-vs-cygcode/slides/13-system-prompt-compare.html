@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>13 · System Prompt 结构对比</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  body { background: var(--bg-warm); }
+  .content { overflow-y: auto; }
+  .sp-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; flex: 1; }
+  .sp-col { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-light); overflow: hidden; display: flex; flex-direction: column; }
+  .sp-col-header { padding: 18px 28px; font-size: 28px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 12px; }
+  .sp-col-cyg .sp-col-header { background: var(--accent-cyg); }
+  .sp-col-claude .sp-col-header { background: var(--accent-claude); }
+  .sp-col-body { padding: 18px 24px; flex: 1; overflow-y: auto; font-size: 18px; line-height: 1.5; }
+  .sp-section { margin-bottom: 14px; border-left: 3px solid var(--border-light); padding-left: 14px; }
+  .sp-section.cyg-accent { border-left-color: var(--accent-cyg); }
+  .sp-section.claude-accent { border-left-color: var(--accent-claude); }
+  .sp-section .sp-sec-title { font-family: var(--font-mono); font-size: 16px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 4px; }
+  .sp-col-cyg .sp-sec-title { color: var(--accent-cyg); }
+  .sp-col-claude .sp-sec-title { color: var(--accent-claude); }
+  .sp-section .sp-sec-body { font-size: 18px; line-height: 1.45; color: var(--text-body); }
+  .insight-box { margin-top: auto; background: var(--bg-card-alt); border: 1px solid var(--border-light); border-radius: 8px; padding: 12px 16px; font-size: 18px; line-height: 1.5; }
+  .insight-box strong { color: var(--accent-gold); }
+  .diff-badge { display: inline-block; font-size: 14px; font-weight: 600; padding: 1px 8px; border-radius: 4px; margin-right: 4px; }
+  .diff-badge.cyg { background: rgba(196,69,54,0.1); color: var(--accent-cyg); }
+  .diff-badge.claude { background: rgba(45,106,111,0.1); color: var(--accent-claude); }
+  .diff-table { width: 100%; font-size: 18px; border-collapse: collapse; margin-top: 8px; }
+  .diff-table th { font-size: 16px; text-align: left; padding: 6px 10px; background: rgba(0,0,0,0.02); border-bottom: 2px solid var(--border-light); color: var(--accent-shared); letter-spacing: 0.04em; }
+  .diff-table td { padding: 6px 10px; border-bottom: 1px solid rgba(0,0,0,0.04); vertical-align: top; }
+  .diff-table tr:hover td { background: rgba(0,0,0,0.01); }
+  h2 { font-size: 38px !important; }
+  .bottom-strip { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 14px; }
+  .bottom-card { background: var(--bg-card); border-radius: 10px; border: 1px solid var(--border-light); padding: 14px 18px; text-align: center; }
+  .bottom-card .bc-head { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .bottom-card .bc-body { font-size: 18px; line-height: 1.45; color: var(--text-body); }
+  .mono-block { font-family: var(--font-mono); font-size: 15px; background: rgba(0,0,0,0.02); border-radius: 4px; padding: 2px 6px; }
+</style>
+</head>
+<body>
+<div class="page-inner">
+  <div class="page-header">
+    <div class="logo-bar"><span class="dot-cyg"></span> CygCode <span class="sep">&middot;</span> <span class="dot-claude"></span> Claude Code</div>
+    <div class="tag">Harness Engineering &middot; 调研报告</div>
+  </div>
+  <div class="content">
+    <div class="kicker claude">对比分析</div>
+    <h2>System Prompt 结构对比 &mdash; CygCode vs Claude Code</h2>
+
+    <div class="sp-compare">
+      <!-- CygCode: 原文翻译 -->
+      <div class="sp-col sp-col-cyg">
+        <div class="sp-col-header">&#x1F7E0; CygCode System Prompt</div>
+        <div class="sp-col-body">
+          <div class="sp-section cyg-accent"><div class="sp-sec-title">1. 身份定义</div><div class="sp-sec-body">你是 <strong>Cyg Code</strong>，一位技术高超的软件工程师，在多种编程语言、框架、设计模式和最佳实践方面拥有丰富的知识。</div></div>
+          <div class="sp-section cyg-accent"><div class="sp-sec-title">2. TOOL USE（工具使用说明）</div><div class="sp-sec-body">你有一组工具可供使用，它们在用户批准后执行。你可以使用多种工具并行操作（如读取多个文件、并行搜索），只要这些操作相互独立。对于依赖关系（一个结果作为下一个的输入），需依次使用工具。你将在用户的回复中收到所有工具使用的结果。</div></div>
+          <div class="sp-section cyg-accent"><div class="sp-sec-title">3. UPDATING TASK PROGRESS（任务进度追踪）</div><div class="sp-sec-body">你可以通过每个工具调用支持的 <strong>task_progress</strong> 参数来跟踪和传达整体任务进度。使用 task_progress 确保你保持在任务轨道上。该参数可用于任何模式、任何工具调用。格式要求：从 PLAN 切换到 ACT MODE 时创建待办清单；通过 task_progress 参数静默更新；使用 Markdown checklist 格式。</div></div>
+          <div class="sp-section cyg-accent"><div class="sp-sec-title">4. ACT MODE vs PLAN MODE</div><div class="sp-sec-body">在每个用户消息中，<strong>environment_details</strong> 会指明当前模式。共有两种模式：<strong>ACT MODE</strong> 可使用除 plan_mode_respond 之外的所有工具，完成任务后使用 attempt_completion 呈现结果。<strong>PLAN MODE</strong> 使用 plan_mode_respond 工具，目标是收集信息制定详细计划，用户审核批准后切换到 ACT MODE 实施。</div></div>
+          <div class="sp-section cyg-accent"><div class="sp-sec-title">5. CAPABILITIES（能力声明）</div><div class="sp-sec-body">你可以在用户计算机上执行 CLI 命令、列出文件、查看源代码定义、正则搜索、读写文件、提出追问。当用户首次给出任务时，当前工作目录的递归文件列表会包含在 environment_details 中。你可以使用 search_files 进行正则搜索，使用 list_code_definition_names 获取源代码定义概览，访问 MCP 服务器获得额外工具和资源。</div></div>
+          <div class="sp-section cyg-accent"><div class="sp-sec-title">6. SKILLS（技能库）</div><div class="sp-sec-body">以下技能可在特定任务时按需加载：<strong>add-new-knowledge</strong>（阅读分析研究论文提取核心技术内容整理为知识文件）；<strong>extract-pdf</strong>（从 PDF 提取文本保存为纯文本）；<strong>huashu-design</strong>（用 HTML 做高保真原型、交互 Demo、幻灯片、动画、设计变体探索及设计方向顾问）。通过 use_skill 工具按需激活。</div></div>
+          <div class="sp-section cyg-accent"><div class="sp-sec-title">7. FEEDBACK（反馈机制）</div><div class="sp-sec-body">当用户向你提供反馈时，可告知用户使用 /reportbug 斜杠命令报告新问题。</div></div>
+          <div class="sp-section cyg-accent"><div class="sp-sec-title">8. RULES（运行规则）</div><div class="sp-sec-body">当前工作目录为 d:\A.python project\wiki。所有工具将从此目录执行。你可以并行使用多个独立操作的工具。对于依赖操作，需等待前一个结果再继续。</div></div>
+          <div class="sp-section cyg-accent"><div class="sp-sec-title">9. SYSTEM INFORMATION（系统信息）</div><div class="sp-sec-body">操作系统：Windows 11 | IDE：Visual Studio Code | 默认 Shell：cmd.exe | Home 目录：C:\Users\lenovo | 当前工作目录：d:\A.python project\wiki</div></div>
+          <div class="insight-box"><strong>&#x1F4A1; CygCode 核心理念：</strong>把 agent 当作<strong>"合作伙伴"</strong>&mdash;&mdash;给它身份、能力清单、模式切换。教育式引导。task_progress 强制追踪。Skills 按需扩展。</div>
+        </div>
+      </div>
+
+      <!-- Claude Code: 原文翻译 -->
+      <div class="sp-col sp-col-claude">
+        <div class="sp-col-header">&#x1F535; Claude Code System Prompt</div>
+        <div class="sp-col-body">
+          <div class="sp-section claude-accent"><div class="sp-sec-title">1. 身份定义 + 安全边界</div><div class="sp-sec-body">你是一个帮助用户完成软件工程任务的<strong>交互式 Agent</strong>。使用以下说明和可用工具来协助用户。重要：协助授权的安全测试、防御性安全、CTF 挑战和教育场景。拒绝用于破坏性技术、DoS 攻击、大规模定向攻击、供应链破坏或恶意检测规避的请求。双用途安全工具需要明确的授权上下文。</div></div>
+          <div class="sp-section claude-accent"><div class="sp-sec-title">2. SYSTEM（系统规则）</div><div class="sp-sec-body">工具输出之外的所有文本都会显示给用户。工具在用户选择的权限模式下执行。用户可配置 hooks（shell 命令），其反馈视为用户输入。系统将自动压缩早期消息以管理上下文窗口。</div></div>
+          <div class="sp-section claude-accent"><div class="sp-sec-title">3. DOING TASKS（行为准则）</div><div class="sp-sec-body">用户主要要求你执行软件工程任务。不创建不必要文件。不给时间估算。不投机抽象。三行相似代码好过一个过早的抽象。不添加超出要求的特性。不添加 docstrings 或注释到未修改的代码。不添加无法发生场景的错误处理。不创建一次性 helper 或抽象。</div></div>
+          <div class="sp-section claude-accent"><div class="sp-sec-title">4. ACTIONS（风险动作）</div><div class="sp-sec-body">执行操作前需仔细考虑可逆性和影响范围。本地可逆操作可自由执行。但对于难以撤销、影响共享系统或可能造成风险/破坏的操作，需先征得用户确认：破坏性操作（删除文件/分支、rm -rf、覆盖未提交更改）；难以撤销的操作（force-push、git reset --hard、修改 CI/CD）；影响他人的操作（推送代码、创建/关闭 PR、发送消息、修改共享基础设施）。</div></div>
+          <div class="sp-section claude-accent"><div class="sp-sec-title">5. USING YOUR TOOLS（工具使用）</div><div class="sp-sec-body">有专用工具时不要使用 Bash 运行命令。读取文件用 Read 而非 cat。编辑文件用 Edit 而非 sed。创建文件用 Write 而非 cat heredoc。搜索文件用 Glob 而非 find。搜索内容用 Grep 而非 grep。使用 TaskCreate/TodoWrite 工具规划和管理工作。</div></div>
+          <div class="sp-section claude-accent"><div class="sp-sec-title">6. TONE AND STYLE（语调与风格）</div><div class="sp-sec-body">除非用户明确要求，否则不使用 emoji。回复应简短简洁。引用函数或代码时包含 file_path:line_number。引用 GitHub issue/PR 时使用 owner/repo#123 格式。</div></div>
+          <div class="sp-section claude-accent"><div class="sp-sec-title">7. OUTPUT EFFICIENCY（输出效率）</div><div class="sp-sec-body"><strong>直奔主题。尝试最简单的方案，不要绕圈子。不要过度。</strong>以答案或行动开头，而非推理过程。跳过填充词、序言和不必要的过渡。不要复述用户说过的话。能用一句就不用三句。</div></div>
+          <div class="sp-section claude-accent"><div class="sp-sec-title">8. DYNAMIC SECTIONS（动态段）</div><div class="sp-sec-body">以下为每个会话动态注入的内容：会话特定指引、环境信息、以及条件注入段（语言偏好、输出风格、MCP 服务器指令、临时目录路径、函数结果清理）。动态段与静态段之间以 SYSTEM_PROMPT_DYNAMIC_BOUNDARY 分隔，实现跨 session 缓存优化。</div></div>
+          <div class="insight-box"><strong>&#x1F4A1; Claude Code 核心理念：</strong>把 agent 当作<strong>"精密工具"</strong>&mdash;&mdash;最少字定义最严边界。静态/动态分离实现缓存零成本。约束式治理。</div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="bottom-strip">
+      <div class="bottom-card">
+        <div class="bc-head" style="color:var(--accent-cyg);">CygCode 思路</div>
+        <div class="bc-body"><strong>"教育式引导"</strong>：把 agent 当作需要被"教会"的合作伙伴。详细说明能力、模式、工具用法。task_progress 强制追踪。Skills 扩展专项能力。</div>
+      </div>
+      <div class="bottom-card">
+        <div class="bc-head" style="color:var(--accent-gold);">核心分歧</div>
+        <div class="bc-body">一个<strong>教 agent 如何思考</strong>（CygCode），一个<strong>约束 agent 不要越界</strong>（Claude Code）。前者给身份和工具箱，后者给边界和底线。</div>
+      </div>
+      <div class="bottom-card">
+        <div class="bc-head" style="color:var(--accent-claude);">Claude Code 思路</div>
+        <div class="bc-body"><strong>"约束式治理"</strong>：把 agent 当作需要被"限制"的精密工具。最少字定义最严边界。静态/动态分离实现缓存零成本。Hooks 让外部可编程。</div>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span>CC &middot; SP 结构逐段对比 + 关键维度差异 + 设计思路分歧</span>
+    <span>13</span>
+  </div>
+</div>
+</body>
+</html>

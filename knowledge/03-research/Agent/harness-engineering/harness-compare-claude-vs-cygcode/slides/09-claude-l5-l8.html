@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>09 · CC 压缩栈详解</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  body { background: var(--bg-warm); }
+  .content { overflow-y: auto; }
+
+  /* Main flow diagram */
+  .flow-diagram {
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    padding: 14px 22px;
+    margin: 6px 0;
+  }
+  .flow-diagram .mono {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+  .flow-diagram .step { color: var(--accent-claude); font-weight: 700; }
+  .flow-diagram .cond { color: var(--accent-gold); font-weight: 600; }
+  .flow-diagram .result { color: var(--accent-shared); }
+  .flow-diagram .tag { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 15px; font-weight: 600; margin: 0 2px; }
+  .tag-budget { background: rgba(45,106,111,0.1); color: var(--accent-claude); }
+  .tag-proj { background: rgba(196,149,74,0.1); color: #8a6e30; }
+  .tag-mc { background: rgba(196,69,54,0.08); color: var(--accent-cyg); }
+  .tag-compact { background: rgba(90,83,70,0.1); color: var(--accent-shared); }
+
+  /* Three concepts cards */
+  .three-concepts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 6px 0; }
+  .tc-card {
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+    text-align: center;
+  }
+  .tc-card .tc-head { padding: 8px; font-size: 22px; font-weight: 700; color: #fff; }
+  .tc-card .tc-body { padding: 10px 14px; }
+  .tc-card .tc-body p { font-size: 20px; line-height: 1.4; margin-bottom: 6px; }
+  .tc-card .tc-body .tc-table { font-size: 18px; width: 100%; border-collapse: collapse; text-align: left; }
+  .tc-card .tc-body .tc-table td { padding: 4px 6px; border-bottom: 1px solid rgba(0,0,0,0.04); }
+  .tc-card .tc-body .tc-table tr:last-child td { border-bottom: none; }
+
+  /* Detailed budget table */
+  .detail-table { width:100%; font-size: 20px; border-collapse: collapse; margin: 6px 0; }
+  .detail-table th { font-size: 18px; text-align: left; padding: 6px 10px; background: var(--bg-card); border-bottom: 2px solid var(--border-light); }
+  .detail-table td { padding: 6px 10px; border-bottom: 1px solid rgba(0,0,0,0.03); vertical-align: top; }
+  .detail-table tr:hover td { background: rgba(0,0,0,0.01); }
+  .detail-table .level { font-weight: 700; color: var(--accent-claude); }
+  .ex-box { font-size: 18px; line-height: 1.4; color: var(--accent-shared); margin: 3px 0; padding: 3px 8px; border-left: 3px solid var(--border-light); background: rgba(0,0,0,0.01); border-radius: 0 4px 4px 0; }
+
+  h2 { font-size: 38px !important; }
+</style>
+</head>
+<body>
+<div class="page-inner">
+  <div class="page-header">
+    <div class="logo-bar">
+      <span class="dot-cyg"></span> CygCode
+      <span class="sep">·</span>
+      <span class="dot-claude"></span> Claude Code
+    </div>
+    <div class="tag">Harness Engineering · 调研报告</div>
+  </div>
+  <div class="content">
+    <div class="kicker claude">Claude Code · 上下文工程精讲</div>
+    <h2>6 层压缩栈 — 执行顺序、条件与逻辑</h2>
+
+    <!-- Flow diagram -->
+    <div class="flow-diagram">
+      <div class="mono">
+<span class="step">[A] state.messages</span> 原始 REPL 历史（可能 1MB+）
+  │
+  ├─ <span class="cond">getMessagesAfterCompactBoundary?</span> 有 boundary?
+  │   └─ YES → <span class="result">丢弃 boundary 之前内容</span>
+  │   └─ NO  → <span class="result">全部保留</span>
+  │
+  ├─ <span class="cond">[1] applyToolResultBudget</span>  <span class="tag tag-budget">每 msg >50K?</span>
+  │   ├─ YES → <span class="result">持久化到磁盘 + byte-identical preview 替换</span>
+  │   └─ NO  → <span class="result">跳过</span>
+  │
+  ├─ <span class="cond">[2] snipCompactIfNeeded</span>  <span class="tag tag-proj">HISTORY_SNIP 开启?</span>
+  │   ├─ YES → <span class="result">可 snip 消息替换为 [id:xxx] <strong>（投影·REPL 保留完整）</strong></span>
+  │   └─ NO  → <span class="result">跳过</span>
+  │
+  ├─ <span class="cond">[3] microcompact</span>  <span class="tag tag-mc">time-based / cached</span>
+  │   ├─ lastAssistant > 60min → <span class="result">清空 tool_result → "[Old tool result cleared]"</span>
+  │   ├─ cache 阈值 → <span class="result">API 层自动删旧 tool（不动 messages）</span>
+  │   └─ 都不满足 → <span class="result">跳过</span>
+  │
+  ├─ <span class="cond">[4] contextCollapse</span>  <span class="tag tag-mc">上下文 > 90%/95%?</span>
+  │   ├─ YES → <span class="result">单 tool 折叠为 [id:foldN] <strong>（投影·只折「原料」不折「结论」）</strong></span>
+  │   └─ NO  → <span class="result">跳过</span>
+  │
+  ├─ <span class="cond">[5] autoCompact</span>  <span class="tag tag-compact">token ≥ window - 13K?</span>
+  │   ├─ YES → <span class="result">fork agent 生成 summary → splice 替换为 [BOUNDARY + summary + 最后几轮]</span>
+  │   └─ NO  → <span class="result">跳过</span>
+  │
+  ├─ <span class="cond">[6] reactiveCompact</span>  <span class="tag tag-compact">API 返回 413?</span>
+  │   ├─ YES → <span class="result">用户不知情下自动重试（一次 turn 仅一次）</span>
+  │   └─ NO  → <span class="result">正常发 API</span>
+  │
+  ├─ <span class="step">normalizeMessagesForAPI</span> (12 步过滤/合并/规范化)
+  ├─ <span class="step">prependUserContext</span> (Rules isMeta)
+  └─ <span class="step">callModel</span> → API</div>
+    </div>
+
+    <!-- Examples from documents -->
+    <p style="font-size:22px;"><strong>完整示例：一个 30 轮长对话的生命周期</strong></p>
+    <div class="flow-diagram">
+      <div class="mono">
+<span class="step">第 1-3 轮：</span> 读 5 个文件 + grep 结果 + 改代码 → REPL 300KB
+<span class="cond">第 4 轮：</span> applyToolResultBudget 检测 tu_grep(80KB) > 50K → 持久化到磁盘 + preview
+  └─ 之后每轮从 cache 取回 byte-identical preview（不重新计算）
+<span class="cond">第 8 轮：</span> 模型说「刚才 grep 结果里那个 match...」
+  └─ 展开 preview 回 80KB 完整内容（通过 path hint 重新 Read 磁盘）
+<span class="cond">第 15 轮：</span> REPL 650KB，上下文 > 90%
+  └─ contextCollapse 把 tu_readFile(auth.ts, 80KB) 折叠为 [id:fold1]
+  └─ asst2「我看完了，login() 有问题」保留不折（结论）
+<span class="cond">第 30 轮：</span> REPL 950K, token = effectiveWindow - 10K, 超过 13K 阈值
+  └─ autoCompact: fork agent → 3-5K summary → [BOUNDARY + summary + 最后 5 轮] = 20KB
+  └─ PostCompact hook → 重新注入 attachments + Rules 重新 prepend</div>
+    </div>
+
+            <!-- 3 concepts with comparison table -->
+    <p style="font-size:22px; margin-top:4px;"><strong>投影 vs 替换 vs 压缩 — 三种收缩手段</strong></p>
+    <div class="three-concepts">
+      <div class="tc-card">
+        <div class="tc-head" style="background:var(--accent-claude);">📽 投影 Projection</div>
+        <div class="tc-body">
+          <p style="font-size:18px;font-style:italic;color:#666;margin-bottom:2px;">像 Git stash：REPL 完整保留，API 只见短 ID</p>
+          <p><strong>REPL 保留 · API 不发</strong><br><span style="color:var(--accent-claude);font-weight:700;">✅ 可逆</span></p>
+          <table class="tc-table">
+            <tr><td>REPL 数据</td><td>✅ 完整保留</td></tr>
+            <tr><td>磁盘备份</td><td>❌ 不需要</td></tr>
+            <tr><td>发给 API</td><td>❌ 短 ID [id:xxx]</td></tr>
+            <tr><td>下轮恢复</td><td>✅ 展开 ID → 全量</td></tr>
+          </table>
+          <div style="font-size:18px;text-align:left;margin-top:6px;padding-top:6px;border-top:1px solid var(--border-light);"><strong>⏱ 触发时机：</strong><br>• Snip：HISTORY_SNIP 开启时，每轮检查可投影消息 → 替换为 [id:xxx]<br>• Collapse：上下文 >90%/95%，单大 tool 折叠为 [id:foldN]</div>
+          <div style="font-size:18px;text-align:left;margin-top:4px;"><strong>🔁 如何复原：</strong><br>模型需要查看时，通过短 ID 回查 REPL state → 提取原文 → 重新注入对话。<br>因为 REPL 始终持有完整数据，投影是完全可逆的。</div>
+          <p style="font-size:18px;margin-top:4px;">snipCompact · contextCollapse</p>
+        </div>
+      </div>
+      <div class="tc-card">
+        <div class="tc-head" style="background:var(--accent-cyg);">🗃 替换 Replacement</div>
+        <div class="tc-body">
+          <p style="font-size:18px;font-style:italic;color:#666;margin-bottom:2px;">像文件缩略图：原文件存磁盘，对话只看预览</p>
+          <p><strong>永久改 state.messages</strong><br><span style="color:var(--accent-cyg);font-weight:700;">⚠ 对话不可逆，数据不丢失</span></p>
+          <table class="tc-table">
+            <tr><td>REPL 数据</td><td>🔄 preview 字符串</td></tr>
+            <tr><td>磁盘备份</td><td>✅ 完整保存</td></tr>
+            <tr><td>发给 API</td><td>✅ 2KB preview</td></tr>
+            <tr><td>下次再发</td><td>✅ byte-identical 不重算</td></tr>
+          </table>
+          <div style="font-size:18px;text-align:left;margin-top:6px;padding-top:6px;border-top:1px solid var(--border-light);"><strong>⏱ 触发时机：</strong><br>• 单 msg tool_result > 50K 字符 → 写入磁盘 + 生成 2KB preview + 附加路径提示<br>• 同一结果再遇到 → 直接返回缓存中的 byte-identical preview</div>
+          <div style="font-size:18px;text-align:left;margin-top:4px;"><strong>🔁 如何复原：</strong><br>state.messages 已被 preview 替换（不可逆）。但原始数据在磁盘上，且 preview 携带路径提示（path hint）。模型需要时可通过 Read 工具重新读取文件，获取完整内容。</div>
+          <p style="font-size:18px;margin-top:4px;">toolResultBudget</p>
+        </div>
+      </div>
+      <div class="tc-card">
+        <div class="tc-head" style="background:var(--accent-gold);">📄 压缩 Compression</div>
+        <div class="tc-body">
+          <p style="font-size:18px;font-style:italic;color:#666;margin-bottom:2px;">像会议纪要：保留要点，丢掉逐字稿</p>
+          <p><strong>splice 删除 + summary</strong><br><span style="color:var(--accent-gold);font-weight:700;">⚠ 不可逆，但 L7 保证规则不丢</span></p>
+          <table class="tc-table">
+            <tr><td>REPL 数据</td><td>❌ splice 删除</td></tr>
+            <tr><td>磁盘备份</td><td>🔄 session log 可查</td></tr>
+            <tr><td>发给 API</td><td>✅ summary (~5K)</td></tr>
+            <tr><td>下轮恢复</td><td>❌ 需手动从 log 恢复</td></tr>
+          </table>
+          <div style="font-size:18px;text-align:left;margin-top:6px;padding-top:6px;border-top:1px solid var(--border-light);"><strong>⏱ 触发时机：</strong><br>• autoCompact：token ≥ effectiveWindow − 13K → fork agent 生成 summary → splice 替换<br>• reactiveCompact：API 返回 413（prompt too long）→ 用户不知情下自动重试并压缩</div>
+          <div style="font-size:18px;text-align:left;margin-top:4px;"><strong>🔁 如何复原：</strong><br>对话原文不可恢复（splice 已删除）。<br>但 <strong>L7「压缩后规则再激活」</strong> 在 boundary 后立即：重新 prepend Rules、重新计算附件/nudge、重新触发 hook、保持 permission mode 和 todo 状态——规则永远在场，只丢了历史细节。</div>
+          <p style="font-size:18px;margin-top:4px;">autoCompact · reactiveCompact</p>
+        </div>
+      </div>
+    </div>
+<!-- Budget + Read exemption -->
+    <p style="font-size:22px; margin-top:4px;"><strong>5 层 tool_result 预算 + Read 豁免</strong></p>
+    <table class="detail-table">
+      <tr><th>预算层</th><th>触发条件</th><th>效果</th><th>示例</th></tr>
+      <tr><td class="level">1. 单工具上限</td><td>maxResultSizeChars 声明</td><td>截断/返回 partial</td><td>Read=Infinity（豁免）</td></tr>
+      <tr><td class="level">2. 每 msg budget</td><td>该轮 tool_result > 50K 字符</td><td>持久化 + preview + 路径提示</td><td>80KB grep → preview</td></tr>
+      <tr><td class="level">3. Time-based MC</td><td>lastAssistant > 60 min</td><td>清空为 "[Old tool result cleared]"</td><td>午休后回来已清</td></tr>
+      <tr><td class="level">4. Cached MC</td><td>GrowthBook 阈值</td><td>API 层删旧 tool（保留 cache prefix）</td><td>服务端自动处理</td></tr>
+      <tr><td class="level">5. Context Collapse</td><td>上下文 > 90%/95%</td><td>单 tool 折叠为短 ID</td><td>80KB auth.ts → [id:fold1]</td></tr>
+    </table>
+
+    <p style="font-size:22px;"><strong>Read 豁免防止死循环</strong>：Read 工具 maxResultSizeChars=Infinity → 不被 budget 压缩。否则「压缩→Read 磁盘 txt→再压缩→再 Read」死循环。<br>
+    <strong>fileStateCache (LRU 100/25MB)</strong>：同一文件再读 → 返回 "Already read" 不重复注入 80KB。<br>
+    <strong>Cache 策略</strong>：替换 byte-identical（破坏 cache prefix = token 浪费）→ 静态/动态分离 → Tools schema session-stable base + overlay</p>
+  </div>
+  <div class="page-footer">
+    <span>CC · 6 层压缩顺序/条件/示例 + 投影/替换/压缩对比 + 5 层预算 + Read 豁免</span>
+    <span>09</span>
+  </div>
+</div>
+</body>
+</html>

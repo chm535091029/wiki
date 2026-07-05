@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>10 · 关键设计对比</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  body { background: var(--bg-warm); }
+  .content { overflow-y: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 20px; line-height: 1.35; table-layout: fixed; }
+  thead th {
+    position: sticky; top: 0; background: var(--bg-card);
+    padding: 8px 12px; text-align: left;
+    font-size: 18px; letter-spacing: 0.04em;
+    border-bottom: 2px solid var(--border-light);
+  }
+  thead th:first-child { width: 20%; }
+  thead th:nth-child(2) { width: 40%; }
+  thead th:nth-child(3) { width: 40%; }
+  tbody td {
+    padding: 6px 12px; border-bottom: 1px solid rgba(0,0,0,0.04);
+    line-height: 1.35; vertical-align: top;
+  }
+  tbody tr:hover { background: rgba(0,0,0,0.02); }
+  .tag-ce { font-size: 16px; display: inline-block; padding: 1px 8px; border-radius: 99px; margin-left: 4px; background: rgba(90,83,70,0.08); color: var(--accent-shared); vertical-align: top; }
+  .tag-update { font-size: 16px; display: inline-block; padding: 1px 8px; border-radius: 4px; margin-left: 4px; background: rgba(196,149,74,0.12); color: var(--accent-gold); vertical-align: top; }
+  .content { padding-top: 6px; padding-bottom: 14px; }
+</style>
+</head>
+<body>
+<div class="page-inner">
+  <div class="page-header">
+    <div class="logo-bar">
+      <span class="dot-cyg"></span> CygCode
+      <span class="sep">·</span>
+      <span class="dot-claude"></span> Claude Code
+    </div>
+    <div class="tag">Harness Engineering · 调研报告</div>
+  </div>
+  <div class="content" style="padding-top:6px;">
+    <div class="kicker">Key Comparison</div>
+    <h2>关键设计维度对比</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>维度</th>
+          <th>CygCode</th>
+          <th>Claude Code</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>约束注入方式</td>
+          <td>System Prompt 13 Section 组件化 + User Message 3 层 + environment_details（精简）+ FocusChain</td>
+          <td>System Prompt 静态/动态分离 + prependUserContext isMeta + getAttachmentMessages Nudge</td>
+        </tr>
+        <tr>
+          <td>System Prompt 策略</td>
+          <td>每轮完整重建，不缓存。Variant 适配不同模型</td>
+          <td>静态段 byte-stable 跨 session 缓存 · BOUNDARY 标记分离</td>
+        </tr>
+        <tr>
+          <td>Rules 注入 <span class="tag-ce">CE</span></td>
+          <td>8 类规则固定拼接，唯一注入点 USER_INSTRUCTIONS</td>
+          <td>5 层优先级 (Managed→AutoMem) + Conditional + Nested Memory + @include 模块化</td>
+        </tr>
+        <tr>
+          <td>硬约束</td>
+          <td>Tool schema 验证 + XML 格式 + 用户审批/沙箱</td>
+          <td>Permission 5 级判定栈 + plan mode 守卫 + deny > hook allow 防御纵深</td>
+        </tr>
+        <tr>
+          <td>进度追踪</td>
+          <td>FocusChain 文件持久化 + 双向同步 + 6 种场景提醒 + Interval 门控（默认 6 轮强制）<span class="tag-update">NEW</span></td>
+          <td>V1 TodoWrite (deferred) + V2 TaskCreate/TaskUpdate (file-persisted) + Plan Mode 封闭状态机 + VerifyPlanExecution <span class="tag-update">V1/V2</span></td>
+        </tr>
+        <tr>
+          <td>上下文压缩 <span class="tag-ce">CE</span></td>
+          <td>ContextManager 4 截断策略 · Auto-Condense LLM 自摘要</td>
+          <td>6 层递进压缩栈：budget→snip→microcompact→collapse→auto→reactive</td>
+        </tr>
+        <tr>
+          <td>三种收缩 <span class="tag-ce">CE</span></td>
+          <td>Handler 截断(按工具) + ContextManager(消息级) + 摘要</td>
+          <td>投影(可逆·REPL保留) + 替换(不可逆·byte-identical) + 压缩(不可逆·splice)</td>
+        </tr>
+        <tr>
+          <td>缓存策略 <span class="tag-ce">CE</span></td>
+          <td>System Prompt 不缓存 · Rules/Skills 每轮重读 · 自适应</td>
+          <td>memoize → /clear + systemPromptSectionCache + 每轮重算(MCP/attachments)</td>
+        </tr>
+        <tr>
+          <td>File Read 去重 <span class="tag-ce">CE</span></td>
+          <td>ContextManager 自动去重，旧版本替换为 [NOTE]</td>
+          <td><strong>fileStateCache</strong> LRU 100 entry / 25MB — 专门挡"已读再读"，命中返回"Already read"不重新注入<br>
+              <strong>Read 豁免</strong> — 声明 maxResultSizeChars=Infinity，不进入 50K 预算持久化层<br>
+              <span style="font-size:16px;color:var(--text-muted);">防止"压缩→读 txt→再压缩→再读 txt"死循环</span></td>
+        </tr>
+        <tr>
+          <td>Rules/Skills/Workflows</td>
+          <td>Rules 进 SP · Skills 三步加载 · Workflows 按需注入 user message</td>
+          <td><strong>Rules</strong> prepend isMeta · <strong>Skills</strong> 元数据+正文分离 + 动态发现 · Commands 与 Skills 同构<br>
+              <strong>动态发现机制</strong>：文件操作（Read/Write/Edit）后自动触发 discoverSkillDirsForPaths → 遍历父目录找 .claude/skills/ → addSkillDirectories + clearCommandsCache<br>
+              <span style="font-size:16px;color:var(--text-muted);">不靠用户手动注册，而是系统根据行为推断加载</span></td>
+        </tr>
+        <tr>
+          <td>压缩后恢复 <span class="tag-ce">CE</span></td>
+          <td>Truncation Notice + auto-condense 摘要</td>
+          <td>compact_boundary + PostCompact hook 全部重做 + reactive 413 抢救</td>
+        </tr>
+        <tr>
+          <td>Hooks 扩展点</td>
+          <td><strong>5 Hook 点</strong>：TaskStart / UserPromptSubmit / TaskResume / TaskCancel / PreCompact<br>
+              <span style="font-size:16px;color:var(--text-muted);">返回 contextModification → hook_context 标签注入 userContent 各段；TaskCancel 可阻止取消，PreCompact 可阻止自动压缩</span></td>
+          <td><strong>27 Hook 事件</strong>：PreToolUse / PostToolUse / UserPromptSubmit / Stop / PostCompact / SubagentStart/Stop / PermissionRequest / 等<br>
+              <span style="font-size:16px;color:var(--text-muted);">command / prompt / http / callback 四种实现方式；deny > hook allow 防御纵深</span></td>
+        </tr>
+        <tr>
+          <td>Subagent <span class="tag-update">UPDATED</span></td>
+          <td>excerpt() 截断已移除（仅 .trim() 透传）· 用户规则自动注入（无 isSubagentRun 过滤）</td>
+          <td>8 层独立 harness · fork 继承父规则</td>
+        </tr>
+        <tr>
+          <td>PLAN/ACT</td>
+          <td>PLAN 只读+用户手动切换</td>
+          <td>封闭状态机 · <strong>EnterPlanMode</strong>（plan mode → 只读）→ <strong>ExitPlanMode</strong>（写 plan 文件 + 恢复 prePlanMode）→ <strong>VerifyPlanExecution</strong>（校验实现）<br><span style="font-size:16px;color:var(--text-muted);">prePlanMode 保存进入前的 mode，退出时恢复；Verify 未完成则每 N 轮 reminder 强制提醒</span></td>
+        </tr>
+        <tr>
+          <td>约束强度递进</td>
+          <td>SP(软) → Tool Schema(硬) → FocusChain(软硬) → 审批</td>
+          <td>SP(软) → Rules(软) → Permission/Hook(硬) → 强制流程</td>
+        </tr>
+        <tr>
+          <td>Environment 注入</td>
+          <td>environment_details 精简为仅 Current Mode + Workspace Roots <span class="tag-update">2026-06</span></td>
+          <td>Nudge 16 种动态附件按事件触发</td>
+        </tr>
+        <tr>
+          <td>User Message 顺序 <span class="tag-update">NEW</span></td>
+          <td>envDetails(精简)第1位 → FocusChain → workflow → override(最后) → summarize</td>
+          <td>isMeta → Nudge → 真实用户输入 → assistant → tool_result</td>
+        </tr>
+        <tr>
+          <td>Thinking 流向 <span class="tag-update">NEW</span></td>
+          <td><strong>保存 ≠ 发送</strong>：assistant 响应含完整 thinking 写入 api_conversation_history.json，但下一轮 convertToOpenAiMessages 过滤掉 thinking 类型（仅发 text + tool_use）<br>
+              <span style="font-size:16px;color:var(--text-muted);">reasoning_details 为 OpenRouter 扩展，DeepSeek API 不识别；导致数千 token 持久化却不使用</span></td>
+          <td>Anthropic 协议：thinking 有 signature 时保留发送；OpenRouter：reasoning_details 扩展可解析</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="page-footer">
+    <span>18 项关键维度 · <span class="tag-ce">CE</span> 上下文工程 · <span class="tag-update">金色</span> 最新变更</span>
+    <span>10</span>
+  </div>
+</div>
+</body>
+</html>

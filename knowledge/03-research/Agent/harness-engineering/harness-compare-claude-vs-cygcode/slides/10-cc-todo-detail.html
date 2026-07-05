@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>10 · CC Todo/Task 详解</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  body { background: var(--bg-warm); }
+  .content { overflow-y: auto; }
+
+  .todo-section { margin: 2px 0 4px; }
+  .todo-section h3 { font-size: 24px; margin-bottom: 3px; display: flex; align-items: center; gap: 8px; }
+  .todo-section .meta { font-size: 17px; color: var(--text-muted); font-weight: 400; }
+
+  .two-col-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 3px 0; }
+  .info-card {
+    background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-light); padding: 8px 12px;
+  }
+  .info-card h4 { font-size: 18px; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+  .info-card p { font-size: 16px; line-height: 1.3; margin-bottom: 2px; }
+  .info-card ul { font-size: 15px; padding-left: 14px; margin: 2px 0; line-height: 1.3; }
+  .info-card li { margin-bottom: 1px; }
+  .info-card .code-block {
+    font-family: var(--font-mono); font-size: 14px; line-height: 1.35;
+    background: var(--bg-card-alt); border-radius: 5px; padding: 4px 8px; margin: 2px 0;
+    border-left: 3px solid var(--border-light); white-space: pre-wrap;
+  }
+
+  .flow-example {
+    background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-light);
+    padding: 6px 12px; margin: 3px 0;
+  }
+  .flow-example .mono {
+    font-family: var(--font-mono); font-size: 14px; line-height: 1.35; white-space: pre-wrap;
+  }
+
+  .five-layer { margin: 2px 0; }
+  .layer-row {
+    display: flex; align-items: flex-start; gap: 6px;
+    padding: 3px 8px; border-radius: 5px; margin-bottom: 2px;
+    font-size: 15px; line-height: 1.3;
+  }
+  .layer-row .num {
+    width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff;
+  }
+  .layer-row .lbl { font-weight: 600; flex-shrink: 0; }
+  .l1 { background: rgba(45,106,111,0.08); } .l1 .num { background: var(--accent-claude); }
+  .l2 { background: rgba(196,149,74,0.08); } .l2 .num { background: var(--accent-gold); }
+  .l3 { background: rgba(90,83,70,0.06); } .l3 .num { background: var(--accent-shared); }
+  .l4 { background: rgba(196,69,54,0.06); } .l4 .num { background: var(--accent-cyg); }
+  .l5 { background: rgba(45,106,111,0.05); } .l5 .num { background: #1f5256; }
+
+  .h2 { font-size: 30px !important; }
+  .kicker { margin-bottom: 2px; }
+  p { margin-bottom: 3px; }
+</style>
+</head>
+<body>
+<div class="page-inner">
+  <div class="page-header">
+    <div class="logo-bar">
+      <span class="dot-cyg"></span> CygCode
+      <span class="sep">·</span>
+      <span class="dot-claude"></span> Claude Code
+    </div>
+    <div class="tag">Harness Engineering · 调研报告</div>
+  </div>
+  <div class="content">
+    <div class="kicker claude">Claude Code · 进度追踪机制详解</div>
+    <h2>CC Todo/Task 系统详解：五层提示协同 + V1/V2 双系统</h2>
+
+    <!-- 5-Layer Prompt Cooperation -->
+    <div class="five-layer">
+      <p style="font-size:17px;font-weight:700;margin-bottom:2px;">提示词与 Task/Todo 的五层协同体系</p>
+      <div class="layer-row l1">
+        <span class="num">1</span>
+        <span class="lbl">系统提示词 (编译时)</span>
+        <span style="color:var(--accent-claude);">"Break down and manage your work with the TaskCreate tool"</span>
+      </div>
+      <div class="layer-row l2">
+        <span class="num">2</span>
+        <span class="lbl">工具 Schema (运行时)</span>
+        <span>TaskCreate/Update/List/Get 各自 <code>prompt()</code> 返回详细使用说明</span>
+      </div>
+      <div class="layer-row l3">
+        <span class="num">3</span>
+        <span class="lbl">每轮自动提醒 (按10轮)</span>
+        <span><code>getTaskReminderAttachments()</code> → isMeta 注入: "task tools haven't been used"</span>
+      </div>
+      <div class="layer-row l4">
+        <span class="num">4</span>
+        <span class="lbl">工具返回值引导</span>
+        <span>TaskUpdate 完成时: "Call TaskList to find your next available task"</span>
+      </div>
+      <div class="layer-row l5">
+        <span class="num">5</span>
+        <span class="lbl">工具可见性控制</span>
+        <span>V1/V2 互斥 · 异步 agent 仅 TodoWrite · Teammate 全部 Task 可用</span>
+      </div>
+    </div>
+
+    <!-- Layer 1-2 Details -->
+    <div class="two-col-layout">
+      <div class="info-card" style="border-left:3px solid var(--accent-claude);">
+        <h4>L1 系统提示词</h4>
+        <div class="code-block">getUsingYourToolsSection() 中动态选择:
+  find([TASK_CREATE_TOOL_NAME, TODO_WRITE_TOOL_NAME])
+→ "Break down and manage your work with the {TaskCreate} tool"
+   "Mark each task as completed as soon as you are done."
+   "Do not batch up multiple tasks before marking completed."</div>
+        <p style="font-size:15px;">其他工具（TaskUpdate/List/Get）不出现在顶层提示词，而是通过各自的 <code>prompt()</code> 注入 tool schema</p>
+      </div>
+      <div class="info-card" style="border-left:3px solid var(--accent-gold);">
+        <h4>L2 每个工具的 Prompt</h4>
+        <p style="font-size:15px;font-weight:700;">TaskCreate:</p>
+        <ul style="font-size:14px;">
+          <li>适用：3+ 步骤/Plan mode/多任务/新指令后立即创建</li>
+          <li>不适用：单一简单任务、琐碎无收益</li>
+          <li>提示：创建后用 TaskUpdate 设依赖、先 TaskList 查重</li>
+        </ul>
+        <p style="font-size:15px;font-weight:700;margin-top:2px;">TaskUpdate:</p>
+        <ul style="font-size:14px;">
+          <li>可更新字段：status/subject/description/activeForm/owner/addBlocks/addBlockedBy</li>
+          <li>提示：更新前先 TaskGet 获取最新状态</li>
+        </ul>
+        <p style="font-size:15px;font-weight:700;margin-top:2px;">TaskList:</p>
+        <ul style="font-size:14px;">
+          <li>使用场景：找活干（pending+无owner+未阻塞）、检查进度、查找阻塞</li>
+          <li>Teammate 模式：完成后 TaskList → 认领 pending 任务 → TaskUpdate 设 owner</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- V1 + V2 compact overview -->
+    <div class="two-col-layout">
+      <div class="info-card" style="border-left:3px solid var(--accent-claude);">
+        <h4>V1 · TodoWrite <span style="font-weight:400;font-size:15px;color:var(--text-muted);">(deferred · AppState 内存)</span></h4>
+        <div class="code-block">TodoItem { content, status:"pending/in_progress/completed", activeForm }
+→ TodoWrite({todos: [...]}) → shouldDefer=true → 非阻塞
+→ 全部 completed → 自动清空 → 3+项无验证 → nudge</div>
+      </div>
+      <div class="info-card" style="border-left:3px solid var(--accent-gold);">
+        <h4>V2 · Task 四工具 <span style="font-weight:400;font-size:15px;color:var(--text-muted);">(均 shouldDefer · 文件持久化)</span></h4>
+        <div class="code-block">~/.cline/tasks/{taskListId}/
+  ├── 1.json / 2.json / .lock / .highwatermark
+
+TaskCreate → 自增ID + 写文件 + notifyUi
+TaskGet   → JSON读取 + Zod校验
+TaskList  → 并行读JSON + 过滤已完成blocker
+TaskUpdate→ 6种操作(状态/完成/删除/修改/依赖/分配)</div>
+      </div>
+    </div>
+
+    <!-- Lifecycle Example -->
+    <div class="flow-example">
+      <p style="font-size:16px;font-weight:700;margin-bottom:2px;">完整生命周期示例：五层协同如何引导模型</p>
+      <div class="mono">
+<span style="color:var(--accent-claude);font-weight:600;">用户: "帮我实现博客系统，需要注册、文章发布、评论功能"</span>
+<span style="color:var(--text-muted);font-style:italic;">// L1 系统提示词: "Break down and manage your work with TaskCreate"</span>
+<span style="color:var(--text-muted);font-style:italic;">// L2 TaskCreate 描述: "创建任务，用于跟踪进度"</span>
+→ TaskCreate("实现用户注册") → TaskCreate("实现文章发布") → TaskCreate("实现评论功能")
+
+<span style="color:var(--text-muted);font-style:italic;">// 5轮后没用过TaskUpdate → L3 自动提醒注入</span>
+<span style="color:var(--accent-gold);">→ 自动提醒: "The task tools haven't been used recently..."</span>
+
+<span style="color:var(--text-muted);font-style:italic;">// 完成注册后 → L4 工具返回值引导</span>
+→ TaskUpdate({ id:1, status:"completed" })
+<span style="color:var(--accent-claude);">← "Task completed. Call TaskList to find your next task..."</span>
+→ TaskList() → TaskUpdate({ id:2, status:"in_progress" })
+
+<span style="color:var(--text-muted);font-style:italic;">// 中途插入 + 删除（增量修改 + 硬unlink）</span>
+→ 用户: "加分类管理" → TaskCreate("实现文章分类管理")
+→ 用户: "评论不需要" → TaskUpdate({ id:3, status:"deleted" })
+  <span style="color:var(--accent-claude);">← 磁盘3.json被unlink + 依赖引用被清除</span>
+
+<span style="color:var(--text-muted);font-style:italic;">// L5 工具可见性: teammate可看到全部任务，异步agent只能V1</span></div>
+    </div>
+
+    <!-- Reminder -->
+    <div class="two-col-layout">
+      <div class="info-card" style="border-left:3px solid var(--accent-claude);">
+        <h4>提醒机制</h4>
+        <div class="code-block">TODO_REMINDER_CONFIG = {
+  TURNS_SINCE_WRITE: 10,
+  TURNS_BETWEEN_REMINDERS: 10,
+}
+→ isMeta元消息: "task tools haven't been used..."
+   + 当前任务列表
+→ 冷却10轮，不进REPL UI</div>
+      </div>
+      <div class="info-card" style="border-left:3px solid var(--accent-gold);">
+        <h4>V1 vs V2 对比</h4>
+        <table style="font-size:14px;width:100%;border-collapse:collapse;">
+          <tr style="border-bottom:1px solid var(--border-light);"><th style="padding:2px 4px;font-size:13px;">维度</th><th style="padding:2px 4px;font-size:13px;">V1</th><th style="padding:2px 4px;font-size:13px;">V2</th></tr>
+          <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:2px 4px;">工具</td><td style="padding:2px 4px;">TodoWrite</td><td style="padding:2px 4px;">4个工具</td></tr>
+          <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:2px 4px;">存储</td><td style="padding:2px 4px;">AppState内存</td><td style="padding:2px 4px;">文件系统</td></tr>
+          <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:2px 4px;">恢复</td><td style="padding:2px 4px;">extractTranscript</td><td style="padding:2px 4px;">文件读取</td></tr>
+          <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:2px 4px;">依赖</td><td style="padding:2px 4px;">不支持</td><td style="padding:2px 4px;">双向blocks</td></tr>
+          <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:2px 4px;">删除</td><td style="padding:2px 4px;">自动清空</td><td style="padding:2px 4px;">硬unlink</td></tr>
+          <tr><td style="padding:2px 4px;">修改</td><td style="padding:2px 4px;">全量替换</td><td style="padding:2px 4px;">增量更新</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="page-footer">
+    <span>Claude Code · 五层提示协同 + V1/V2 详细机制（含完整引导示例）</span>
+    <span>10</span>
+  </div>
+</div>
+</body>
+</html>

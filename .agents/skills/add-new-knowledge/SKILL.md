@@ -9,7 +9,7 @@ description: 阅读并分析研究论文/技术文章，提取技术背景、核
 
 ## 前置条件
 
-- 如果是 PDF 文件，先使用 `extract-pdf` skill 提取文本内容（调用 `extract_pdf_text.py` 脚本）
+- 如果是 PDF 文件，调用 `extract_pdf_text.py` 脚本提取文本内容
 - 如果是文本内容（用户直接粘贴或已有文本文件），直接使用 `read_file` 读取
 
 ## 步骤
