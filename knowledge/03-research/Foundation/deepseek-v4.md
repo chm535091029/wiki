@@ -4,6 +4,7 @@ tags: [Muon优化器, CSA, HCA, SharedKV-MQA, TileLang, RMSNorm, RoPE, Attention
 related:
   - "[[deepseek-mhc]]" # V4集成了mHC残差连接
   - "[[deepseek-v3]]" # V4继承V3架构（包含DSA）
+  - "[[deepseek-dspark]]" # V4线上服务部署了DSpark推测解码框架
 ---
 
 # DeepSeek-V4 技术框架
