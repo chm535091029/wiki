@@ -6,6 +6,7 @@ related:
   - "./claude-code-harness.md"
   - "./hook.md"
   - "./paper-agent-harness-definition.md"
+  - "./pi-harness.md"
   - "../context-engineering/claude-code-context-and-rules.md"
 ---
 

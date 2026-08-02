@@ -5,6 +5,7 @@ related:
   - "../context-engineering/claude-code-context-and-rules.md"
   - "./hook.md"
   - "./harness-engineering.md"
+  - "./pi-harness.md"
 ---
 
 # Claude Code 的 Harness 设计方法论
