@@ -5,6 +5,7 @@ related:
   - "./harness-engineering.md"
   - "./claude-code-harness.md"
   - "./hook.md"
+  - "./pi-harness.md"
   - "../context-engineering/claude-code-context-and-rules.md"
 ---
 
