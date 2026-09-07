@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "03-research/Agent/context-engineering/cygcode-context-management.md",
+                "file": "04-engineering/backend-fundamentals/02-request-lifecycle.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "cygcode-context-management"
+              "title": "02-request-lifecycle"
             }
           }
         ]
@@ -185,6 +185,9 @@
   },
   "active": "a31fe7649404414a",
   "lastOpenFiles": [
+    "04-engineering/backend-fundamentals/01-framework-responsibilities.md",
+    "04-engineering/backend-fundamentals/02-request-lifecycle.md",
+    "03-research/Agent/context-engineering/cygcode-context-management.md",
     "03-research/Agent/context-engineering/memory/claude-code-memory.md",
     "03-research/Agent/skills/skill-os.md",
     "03-research/Agent/context-engineering/memory/agent-memory-survey.md",
@@ -218,9 +221,6 @@
     "01-training/dpo.md",
     "04-research/deepseek-v4.md",
     "04-research/deepseek-v3.md",
-    "04-research/00-overview.md",
-    "04-application/00-overview.md",
-    "03-application/rag-agent.md",
     "未命名.canvas"
   ]
 }
