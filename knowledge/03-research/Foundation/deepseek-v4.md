@@ -5,6 +5,7 @@ related:
   - "[[deepseek-mhc]]" # V4集成了mHC残差连接
   - "[[deepseek-v3]]" # V4继承V3架构（包含DSA）
   - "[[deepseek-dspark]]" # V4线上服务部署了DSpark推测解码框架
+  - "[[deepseek-v4.1-flash]]" # V4.1 在 V4 基础上重构注意力并大幅压缩 KV Cache
 ---
 
 # DeepSeek-V4 技术框架

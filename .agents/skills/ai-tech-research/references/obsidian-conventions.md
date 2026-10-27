@@ -22,8 +22,8 @@
 
 ## 图表
 
-- **简单图**（单链路 / 少量节点）：用 ASCII 框图，轻量可读。
-- **复杂图**（多组件、多层、事件流 / 会话树 / 差分渲染等）：用 **Mermaid**（` ```mermaid ` 代码块），Obsidian 原生渲染、比内联 SVG 更稳。示例与避坑见 `document-template.md`。
+- **默认用 Mermaid**（`mermaid` 代码块）：架构图、流程图、数据流图都走 Mermaid，Obsidian 原生渲染、比内联 SVG 更稳，改图成本也低。示例与避坑见 `document-template.md`。
+- **ASCII 只作例外**：图极简（2–3 节点单链路）或必须逐字符对齐（字节布局、命令输出、目录树）时再用。
 
 ## 来源标注
 
